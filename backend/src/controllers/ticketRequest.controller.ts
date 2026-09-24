@@ -9,6 +9,7 @@ import {
   approveTicketRequest,
   rejectTicketRequest,
   getMyTicketRequests,
+  getMyPaymentPendingRequests
 } from "../services/ticketRequest.service";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
 
@@ -254,6 +255,39 @@ export async function getMyTicketRequestsController(
     return res.status(500).json({
       success: false,
       message: "Failed to fetch ticket requests",
+    });
+  }
+}
+
+export async function getMyPaymentPendingRequestsController(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    const requests = await getMyPaymentPendingRequests(
+      req.user.userId,
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: requests,
+    });
+  } catch (error) {
+    console.error(
+      "Get payment pending requests error:",
+      error,
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch payment pending requests",
     });
   }
 }

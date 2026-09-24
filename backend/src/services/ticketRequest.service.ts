@@ -293,3 +293,38 @@ export async function getMyTicketRequests(userId: string) {
 
   return requests;
 }
+
+export async function getMyPaymentPendingRequests(
+  userId: string,
+) {
+  const requests = await prisma.ticketRequest.findMany({
+    where: {
+      userId,
+      status: "PAYMENT_PENDING",
+    },
+
+    orderBy: {
+      reviewedAt: "desc",
+    },
+
+    select: {
+      id: true,
+      status: true,
+      reviewedAt: true,
+
+      event: {
+        select: {
+          id: true,
+          title: true,
+          date: true,
+          startTime: true,
+          endTime: true,
+          venue: true,
+          ticketPrice: true,
+        },
+      },
+    },
+  });
+
+  return requests;
+}

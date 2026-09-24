@@ -5,6 +5,7 @@ import {
   approveTicketRequestController,
   rejectTicketRequestController,
   getMyTicketRequestsController,
+  getMyPaymentPendingRequestsController
 } from "../controllers/ticketRequest.controller";
 
 import { authenticate } from "../middleware/auth.middleware";
@@ -23,6 +24,12 @@ router.get(
   authenticate,
   authorize("CUSTOMER"),
   getMyTicketRequestsController,
+);
+router.get(
+  "/my/payment-pending",
+  authenticate,
+  authorize("CUSTOMER"),
+  getMyPaymentPendingRequestsController,
 );
 router.get(
   "/admin",
