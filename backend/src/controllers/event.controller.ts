@@ -17,7 +17,7 @@ export async function completeEventController(
   res: Response,
 ) {
   try {
-    const eventId = req.params.id;
+    const eventId = String(req.params.id);
 
     const event = await completeEvent(eventId);
 
@@ -60,7 +60,7 @@ export async function cancelEventController(
   res: Response,
 ) {
   try {
-    const eventId = req.params.id;
+    const eventId = String(req.params.id);
 
     const event = await cancelEvent(eventId);
 
@@ -102,7 +102,7 @@ export async function updateEventController(
   res: Response,
 ) {
   try {
-    const eventId = req.params.id;
+    const eventId = String(req.params.id);
 
     const validation = updateEventSchema.safeParse(req.body);
 
@@ -157,7 +157,7 @@ export async function publishEventController(
   res: Response,
 ) {
   try {
-    const event = await publishEvent(req.params.id);
+    const event = await publishEvent(String(req.params.id));
 
     return res.status(200).json({
       success: true,
@@ -217,7 +217,7 @@ export async function getEventByIdController(
   res: Response,
 ) {
   try {
-    const event = await getPublishedEventById(req.params.id);
+    const event = await getPublishedEventById(String(req.params.id));
 
     return res.status(200).json({
       success: true,

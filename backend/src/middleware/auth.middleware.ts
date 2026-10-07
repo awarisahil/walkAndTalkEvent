@@ -7,6 +7,7 @@ if (!JWT_ACCESS_SECRET) {
   throw new Error("JWT_ACCESS_SECRET is not configured");
 }
 
+const JWT_SECRET: string = JWT_ACCESS_SECRET;
 export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
@@ -30,15 +31,16 @@ export function authenticate(
     }
 
     const token = authHeader.substring(7);
+const decoded = jwt.verify(token, JWT_SECRET);
 
-    const decoded = jwt.verify(token, JWT_ACCESS_SECRET);
-
-    if (
-      typeof decoded !== "object" ||
-      decoded === null ||
-      typeof decoded.userId !== "string" ||
-      (decoded.role !== "ADMIN" && decoded.role !== "CUSTOMER")
-    ) {
+   if (
+  typeof decoded !== "object" ||
+  decoded === null ||
+  !("userId" in decoded) ||
+  !("role" in decoded) ||
+  typeof decoded.userId !== "string" ||
+  (decoded.role !== "ADMIN" && decoded.role !== "CUSTOMER")
+) {
       return res.status(401).json({
         success: false,
         message: "Invalid access token",

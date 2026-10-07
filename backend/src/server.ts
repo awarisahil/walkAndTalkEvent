@@ -7,7 +7,7 @@ import prisma from "./config/prisma";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 import eventRoutes from "./routes/event.routes";
-
+import paymentRoutes from "./routes/payment.routes";
 import ticketRequestRoutes from "./routes/ticketRequest.routes";
 dotenv.config();
 
@@ -20,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
-
+app.use("/api/payments", paymentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/events", eventRoutes);

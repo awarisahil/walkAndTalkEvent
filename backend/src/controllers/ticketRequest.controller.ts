@@ -116,7 +116,7 @@ export async function approveTicketRequestController(
   res: Response,
 ) {
   try {
-    const ticketRequestId = req.params.id;
+    const ticketRequestId = String(req.params.id);
 
     const ticketRequest =
       await approveTicketRequest(ticketRequestId);
@@ -170,7 +170,7 @@ export async function rejectTicketRequestController(
   res: Response,
 ) {
   try {
-    const ticketRequestId = req.params.id;
+    const ticketRequestId = String(req.params.id);
 
     const validation = rejectTicketRequestSchema.safeParse(
       req.body,

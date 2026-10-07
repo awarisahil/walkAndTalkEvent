@@ -137,19 +137,18 @@ export async function approveTicketRequest(
     }
 
     // Count tickets that have already been allocated.
-    const allocatedTickets = await tx.ticket.count({
-      where: {
-        eventId: request.eventId,
-        status: {
-          in: ["ACTIVE", "USED"],
-        },
-      },
-    });
+const reservedTickets = await tx.ticketRequest.count({
+  where: {
+    eventId: request.eventId,
+    status: {
+      in: ["PAYMENT_PENDING", "PAID"],
+    },
+  },
+});
 
-    if (allocatedTickets >= request.event.capacity) {
-      throw new Error("Event tickets are full");
-    }
-
+if (reservedTickets >= request.event.capacity) {
+  throw new Error("Event tickets are full");
+}
     const updatedRequest = await tx.ticketRequest.update({
       where: {
         id: ticketRequestId,
