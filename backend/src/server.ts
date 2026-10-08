@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 import eventRoutes from "./routes/event.routes";
 import paymentRoutes from "./routes/payment.routes";
+import ticketRoutes from "./routes/ticket.routes";
 import ticketRequestRoutes from "./routes/ticketRequest.routes";
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use(morgan("dev"));
 app.use("/api/payments", paymentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/tickets", ticketRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/ticket-requests", ticketRequestRoutes);
 app.get("/api/health", (_req, res) => {
