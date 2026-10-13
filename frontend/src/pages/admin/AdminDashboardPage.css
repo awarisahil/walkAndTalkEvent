@@ -1,0 +1,29 @@
+.admin-dash-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-section-link {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.admin-dash-empty {
+  padding: 20px 0;
+}
+
+@media (max-width: 960px) {
+  .admin-dash-columns {
+    grid-template-columns: 1fr;
+  }
+}

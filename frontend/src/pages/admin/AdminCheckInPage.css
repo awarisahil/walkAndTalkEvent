@@ -1,0 +1,77 @@
+.checkin-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.checkin-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checkin-form {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+}
+
+.checkin-ticket-field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.checkin-lookup-btn {
+  margin-bottom: 1px;
+}
+
+.checkin-result {
+  margin-top: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--color-bg-subtle);
+}
+
+.checkin-result-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.checkin-result-number {
+  font-weight: 800;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.05rem;
+}
+
+.checkin-success {
+  position: sticky;
+  bottom: 16px;
+}
+
+.qr-scanner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.qr-scanner-video {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border-strong);
+  background: #000;
+}
+
+@media (max-width: 900px) {
+  .checkin-columns {
+    grid-template-columns: 1fr;
+  }
+}

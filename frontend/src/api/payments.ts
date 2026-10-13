@@ -1,9 +1,12 @@
 import client from "./client";
 import { unwrap } from "./auth";
 import type {
+  AdminPayment,
+  PagedResult,
   Payment,
   PaymentConfig,
   PaymentFulfillment,
+  PaymentStatus,
   RazorpayOrderResponse,
 } from "../types";
 
@@ -44,4 +47,14 @@ export async function fetchMyPayments(): Promise<Payment[]> {
 export async function fetchPayment(id: string): Promise<Payment> {
   const res = await client.get(`/payments/${id}`);
   return unwrap<Payment>(res);
+}
+
+export async function fetchAdminPayments(params: {
+  search?: string;
+  status?: PaymentStatus;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<PagedResult<AdminPayment>> {
+  const res = await client.get("/payments/admin", { params });
+  return unwrap<PagedResult<AdminPayment>>(res);
 }

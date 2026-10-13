@@ -1,5 +1,5 @@
 import client from "./client";
-import type { AuthResponse, RegisterPayload } from "../types";
+import type { AuthResponse, RegisterPayload, User } from "../types";
 
 interface Envelope<T> {
   success: boolean;
@@ -24,10 +24,24 @@ export async function loginApi(
   return unwrap<AuthResponse>(res);
 }
 
-/** The API's register endpoint returns only the user — a login call follows to obtain the token. */
+/**
+ * Current backends return {accessToken, user} from register. Older builds
+ * returned only the user record — for those, log in to obtain the token.
+ */
 export async function registerApi(
   payload: RegisterPayload,
 ): Promise<AuthResponse> {
-  await client.post("/auth/register", payload);
+  const res = await client.post("/auth/register", payload);
+  const data = unwrap<User & { accessToken?: unknown; user?: unknown }>(res);
+
+  if (
+    typeof data.accessToken === "string" &&
+    data.user &&
+    typeof data.user === "object"
+  ) {
+    return { accessToken: data.accessToken, user: data.user as User };
+  }
+
+  // Legacy shape: `data` is the user record itself, without a token.
   return loginApi(payload.email, payload.password);
 }

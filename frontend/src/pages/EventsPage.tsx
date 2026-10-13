@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchEvents } from "../api/events";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import EventCard from "../components/EventCard";
 import Pagination from "../components/Pagination";
+import { toErrorMessage } from "../hooks/useAsyncData";
 import type { Event, PagedResult } from "../types";
 import "./EventsPage.css";
 
@@ -31,38 +32,37 @@ export default function EventsPage() {
   const [result, setResult] = useState<PagedResult<Event> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const load = useCallback(
-    (params: { search: string; dateFrom: string; dateTo: string; page: number }) => {
-      setLoading(true);
-      setError(null);
+  // Debounce search/filter changes by 300ms; all state updates inside the
+  // timer callback happen asynchronously.
+  useEffect(() => {
+    const timer = setTimeout(() => {
       fetchEvents({
-        search: params.search || undefined,
-        dateFrom: params.dateFrom || undefined,
-        dateTo: params.dateTo || undefined,
-        page: params.page,
+        search: search || undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+        page,
         pageSize: PAGE_SIZE,
       })
-        .then(setResult)
-        .catch((err: unknown) => {
-          setError(err instanceof Error ? err.message : "Failed to load events.");
+        .then((data) => {
+          setResult(data);
+          setLoading(false);
         })
-        .finally(() => setLoading(false));
-    },
-    [],
-  );
-
-  // Debounce search input by 300ms; dates and page changes load immediately.
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      load({ search, dateFrom, dateTo, page });
+        .catch((err: unknown) => {
+          setError(toErrorMessage(err, "Failed to load events."));
+          setLoading(false);
+        });
     }, 300);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [search, dateFrom, dateTo, page, load]);
+    return () => clearTimeout(timer);
+  }, [search, dateFrom, dateTo, page, reloadKey]);
+
+  function handleFilterChange(updater: () => void) {
+    updater();
+    setPage(1);
+    setLoading(true);
+    setError(null);
+  }
 
   return (
     <div className="container events-page">
@@ -79,10 +79,9 @@ export default function EventsPage() {
             type="search"
             placeholder="Search by title or venue…"
             value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(1);
-            }}
+            onChange={(event) =>
+              handleFilterChange(() => setSearch(event.target.value))
+            }
           />
         </div>
         <div className="field">
@@ -91,10 +90,9 @@ export default function EventsPage() {
             id="event-date-from"
             type="date"
             value={dateFrom}
-            onChange={(event) => {
-              setDateFrom(event.target.value);
-              setPage(1);
-            }}
+            onChange={(event) =>
+              handleFilterChange(() => setDateFrom(event.target.value))
+            }
           />
         </div>
         <div className="field">
@@ -103,10 +101,9 @@ export default function EventsPage() {
             id="event-date-to"
             type="date"
             value={dateTo}
-            onChange={(event) => {
-              setDateTo(event.target.value);
-              setPage(1);
-            }}
+            onChange={(event) =>
+              handleFilterChange(() => setDateTo(event.target.value))
+            }
           />
         </div>
       </div>
@@ -120,7 +117,11 @@ export default function EventsPage() {
       ) : error ? (
         <ErrorState
           message={error}
-          onRetry={() => load({ search, dateFrom, dateTo, page })}
+          onRetry={() => {
+            setLoading(true);
+            setError(null);
+            setReloadKey((k) => k + 1);
+          }}
         />
       ) : !result || result.items.length === 0 ? (
         <EmptyState
@@ -138,7 +139,11 @@ export default function EventsPage() {
             page={result.meta.page}
             totalPages={result.meta.totalPages}
             total={result.meta.total}
-            onPageChange={setPage}
+            onPageChange={(next) => {
+              setPage(next);
+              setLoading(true);
+              setError(null);
+            }}
           />
         </>
       )}

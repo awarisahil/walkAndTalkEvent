@@ -1,0 +1,19 @@
+.ticket-qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0 8px;
+}
+
+.ticket-qr-canvas {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: #fff;
+}
+
+.ticket-qr-fallback {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}

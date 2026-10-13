@@ -1,0 +1,120 @@
+import { describe, expect, it } from "vitest";
+import request from "supertest";
+import { auth, getApp, registerAndLogin, uniqueEmail } from "./helpers";
+
+describe("auth & user profile", () => {
+  it("registers a customer: 201, no password in response", async () => {
+    const app = await getApp();
+    const email = uniqueEmail("auth-reg");
+    const res = await request(app).post("/api/auth/register").send({
+      name: "Auth User",
+      email,
+      password: "Password123!",
+      phone: "9876543210",
+      age: 28,
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.email).toBe(email);
+    expect(res.body.data.role).toBe("CUSTOMER");
+    expect(res.body.data.password).toBeUndefined();
+  });
+
+  it("rejects duplicate registration", async () => {
+    const app = await getApp();
+    const email = uniqueEmail("auth-dup");
+    const body = { name: "Dup User", email, password: "Password123!" };
+    const first = await request(app).post("/api/auth/register").send(body);
+    expect(first.status).toBe(201);
+    const second = await request(app).post("/api/auth/register").send(body);
+    expect(second.status).toBe(409);
+    expect(second.body.message).toMatch(/already exists/i);
+  });
+
+  it("ignores role=ADMIN in the register body (mass-assignment guard)", async () => {
+    const app = await getApp();
+    const res = await request(app).post("/api/auth/register").send({
+      name: "Sneaky Admin",
+      email: uniqueEmail("auth-role"),
+      password: "Password123!",
+      role: "ADMIN",
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.role).toBe("CUSTOMER");
+  });
+
+  it("logs in with correct credentials and rejects a wrong password", async () => {
+    const app = await getApp();
+    const { email, password } = await registerAndLogin("auth-login");
+
+    const ok = await request(app).post("/api/auth/login").send({ email, password });
+    expect(ok.status).toBe(200);
+    expect(ok.body.data.accessToken).toBeTypeOf("string");
+    expect(ok.body.data.user.email).toBe(email);
+
+    const bad = await request(app)
+      .post("/api/auth/login")
+      .send({ email, password: "WrongPassword1!" });
+    expect(bad.status).toBe(401);
+  });
+
+  it("returns 400 for login validation errors (missing email)", async () => {
+    const app = await getApp();
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ password: "Password123!" });
+    expect(res.status).toBe(400);
+  });
+
+  it("GET /api/users/me requires a token and returns the profile with one", async () => {
+    const app = await getApp();
+    const anon = await request(app).get("/api/users/me");
+    expect(anon.status).toBe(401);
+
+    const { token, email } = await registerAndLogin("auth-me");
+    const res = await request(app).get("/api/users/me").set(auth(token));
+    expect(res.status).toBe(200);
+    expect(res.body.data.email).toBe(email);
+    expect(res.body.data.password).toBeUndefined();
+  });
+
+  it("PATCH /api/users/me updates instagramUsername", async () => {
+    const app = await getApp();
+    const { token } = await registerAndLogin("auth-patch");
+    const res = await request(app)
+      .patch("/api/users/me")
+      .set(auth(token))
+      .send({ instagramUsername: "test.insta" });
+    expect(res.status).toBe(200);
+    expect(res.body.data.instagramUsername).toBe("test.insta");
+  });
+
+  it("PATCH /api/users/me with a taken email returns 409", async () => {
+    const app = await getApp();
+    const first = await registerAndLogin("auth-taken1");
+    const second = await registerAndLogin("auth-taken2");
+
+    const res = await request(app)
+      .patch("/api/users/me")
+      .set(auth(first.token))
+      .send({ email: second.email });
+    expect(res.status).toBe(409);
+  });
+
+  it("PATCH /api/users/me ignores attempts to change the role", async () => {
+    const app = await getApp();
+    const { token } = await registerAndLogin("auth-rolepatch");
+
+    const res = await request(app)
+      .patch("/api/users/me")
+      .set(auth(token))
+      .send({ role: "ADMIN" });
+    expect(res.status).toBe(200);
+    expect(res.body.data.role).toBe("CUSTOMER");
+
+    const me = await request(app).get("/api/users/me").set(auth(token));
+    expect(me.body.data.role).toBe("CUSTOMER");
+  });
+});

@@ -1,6 +1,6 @@
 import client from "./client";
 import { unwrap } from "./auth";
-import type { Ticket } from "../types";
+import type { CheckInResult, Ticket, TicketLookupResult } from "../types";
 
 export async function fetchMyTickets(): Promise<Ticket[]> {
   const res = await client.get("/tickets/my");
@@ -10,4 +10,27 @@ export async function fetchMyTickets(): Promise<Ticket[]> {
 export async function fetchTicket(id: string): Promise<Ticket> {
   const res = await client.get(`/tickets/${id}`);
   return unwrap<Ticket>(res);
+}
+
+/* ---------- admin ---------- */
+
+export async function lookupTicket(
+  ticketNumber: string,
+  eventId?: string,
+): Promise<TicketLookupResult> {
+  const res = await client.get("/tickets/lookup", {
+    params: { ticketNumber, eventId: eventId || undefined },
+  });
+  return unwrap<TicketLookupResult>(res);
+}
+
+export async function checkInTicket(
+  ticketNumber: string,
+  eventId?: string,
+): Promise<CheckInResult> {
+  const res = await client.post("/tickets/check-in", {
+    ticketNumber,
+    eventId: eventId || undefined,
+  });
+  return unwrap<CheckInResult>(res);
 }

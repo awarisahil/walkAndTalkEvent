@@ -3,6 +3,8 @@ import prisma from "../config/prisma";
 import { RegisterInput } from "../validators/auth.validator";
 import { LoginInput } from "../validators/auth.validator";
 import { generateAccessToken } from "../utils/jwt";
+import { conflict, unauthorized } from "../utils/AppError";
+
 export async function registerUser(input: RegisterInput) {
   const existingUser = await prisma.user.findUnique({
     where: {
@@ -11,7 +13,7 @@ export async function registerUser(input: RegisterInput) {
   });
 
   if (existingUser) {
-    throw new Error("User with this email already exists");
+    throw conflict("User with this email already exists");
   }
 
   const hashedPassword = await bcrypt.hash(input.password, 12);
@@ -40,7 +42,12 @@ export async function registerUser(input: RegisterInput) {
     },
   });
 
-  return user;
+  const accessToken = generateAccessToken({
+    userId: user.id,
+    role: user.role,
+  });
+
+  return { accessToken, user };
 }
 export async function loginUser(input: LoginInput) {
   const user = await prisma.user.findUnique({
@@ -50,7 +57,7 @@ export async function loginUser(input: LoginInput) {
   });
 
   if (!user) {
-    throw new Error("Invalid email or password");
+    throw unauthorized("Invalid email or password");
   }
 
   const passwordMatches = await bcrypt.compare(
@@ -59,7 +66,7 @@ export async function loginUser(input: LoginInput) {
   );
 
   if (!passwordMatches) {
-    throw new Error("Invalid email or password");
+    throw unauthorized("Invalid email or password");
   }
 
   const accessToken = generateAccessToken({

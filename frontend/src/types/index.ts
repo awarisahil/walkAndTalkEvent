@@ -204,3 +204,100 @@ export interface EventQueryParams {
   page?: number;
   pageSize?: number;
 }
+
+/* ---------- admin domain ---------- */
+
+export interface AdminTicketRequest extends TicketRequest {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    age: number | null;
+    instagramUsername: string | null;
+    instagramProfileUrl: string | null;
+  };
+}
+
+export interface EventInputPayload {
+  title: string;
+  description?: string;
+  image?: string;
+  /** ISO 8601 datetime. */
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  venue: string;
+  ticketPrice: number;
+  capacity: number;
+}
+
+export interface Attendee {
+  id: string;
+  ticketNumber: string;
+  status: TicketStatus;
+  createdAt: string;
+  usedAt: string | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+  };
+}
+
+export interface AttendeeStats {
+  capacity: number;
+  reserved: number;
+  confirmed: number;
+  used: number;
+  remaining: number;
+}
+
+export interface AttendeesResponse {
+  stats: AttendeeStats;
+  result: PagedResult<Attendee>;
+}
+
+export interface AdminPayment extends Payment {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface TicketLookupResult {
+  id: string;
+  ticketNumber: string;
+  status: TicketStatus;
+  createdAt: string;
+  usedAt: string | null;
+  event: {
+    id: string;
+    title: string;
+    date: string;
+    venue: string;
+  };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface CheckInResult {
+  id: string;
+  ticketNumber: string;
+  status: TicketStatus;
+  usedAt: string;
+  event: {
+    id: string;
+    title: string;
+  };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}

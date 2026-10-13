@@ -1,36 +1,17 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchEvents } from "../api/events";
 import EventCard from "../components/EventCard";
 import ErrorState from "../components/ErrorState";
 import Spinner from "../components/Spinner";
-import type { Event } from "../types";
+import { useAsyncData } from "../hooks/useAsyncData";
 import "./LandingPage.css";
 
 export default function LandingPage() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    fetchEvents({ page: 1, pageSize: 6 })
-      .then((result) => {
-        if (!cancelled) setEvents(result.items);
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load events.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const query = useAsyncData(() =>
+    fetchEvents({ page: 1, pageSize: 6 }).then((result) => result.items),
+  );
+  const { status, reload } = query;
+  const events = query.status === "ready" ? query.data : null;
 
   return (
     <div className="landing">
@@ -65,13 +46,13 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        {loading ? (
+        {status === "loading" ? (
           <div className="full-page-loading">
             <Spinner size="lg" label="Loading events…" />
           </div>
-        ) : error ? (
-          <ErrorState message={error} onRetry={() => window.location.reload()} />
-        ) : events.length === 0 ? null : (
+        ) : status === "error" ? (
+          <ErrorState message={query.message} onRetry={reload} />
+        ) : !events || events.length === 0 ? null : (
           <div className="event-grid">
             {events.map((event) => (
               <EventCard key={event.id} event={event} />

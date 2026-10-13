@@ -3,7 +3,7 @@ import { loginSchema, registerSchema } from "../validators/auth.validator";
 import { loginUser, registerUser } from "../services/auth.service";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ok } from "../utils/response";
-import { badRequest, unauthorized } from "../utils/AppError";
+import { badRequest } from "../utils/AppError";
 
 export const register = asyncHandler(
   async (req: Request, res: Response) => {
@@ -30,17 +30,7 @@ export const login = asyncHandler(
       throw badRequest("Invalid input", result.error.flatten());
     }
 
-    try {
-      const data = await loginUser(result.data);
-      return ok(res, data, { message: "Login successful" });
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === "Invalid email or password"
-      ) {
-        throw unauthorized(error.message);
-      }
-      throw error;
-    }
+    const data = await loginUser(result.data);
+    return ok(res, data, { message: "Login successful" });
   },
 );

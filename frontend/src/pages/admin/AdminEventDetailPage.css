@@ -1,0 +1,12 @@
+.admin-event-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-event-detail-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}

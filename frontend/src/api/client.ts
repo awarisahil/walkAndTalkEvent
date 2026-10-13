@@ -49,9 +49,18 @@ client.interceptors.request.use((config) => {
 
 client.interceptors.response.use(
   (response) => response.data,
-  (error: AxiosError<ApiErrorBody>) => {
+  async (error: AxiosError<ApiErrorBody>) => {
     const status = error.response?.status;
-    const body = error.response?.data;
+    let body: ApiErrorBody | undefined = error.response?.data;
+
+    // Blob responses (e.g. CSV export) carry JSON error bodies inside the blob.
+    if (body instanceof Blob) {
+      try {
+        body = JSON.parse(await body.text()) as ApiErrorBody;
+      } catch {
+        body = undefined;
+      }
+    }
 
     if (status === 401) {
       clearStoredAuth();
