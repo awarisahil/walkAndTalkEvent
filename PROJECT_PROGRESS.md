@@ -55,7 +55,8 @@ Still to write: new `server.ts`, `backend/.env.example`, updated `prisma/seed.ts
 - DB `walkandtalk`: migrated through `20261013090500_unique_provider_order_id`, admin seeded.
 
 ## Next exact actions
-1. Rewrite `backend/src/server.ts`: dotenv → webhook raw route BEFORE express.json → helmet/cors(allowlist env)/json(urlencoded,morgan) → routes → 404 → error middleware → listen + SIGINT/SIGTERM graceful shutdown (server.close + prisma.$disconnect) + optional reservation-sweep interval.
-2. `npx tsc --noEmit` → fix type errors.
-3. Boot server, curl smoke-test: /api/health, register/login, event CRUD+publish, request→approve→dev-complete payment, check-in flow.
-4. `.env.example`, seed.ts, then frontend milestones M5+.
+1. ✅ server.ts rewritten (CORS allowlist, webhook raw-body mount, error middleware, graceful shutdown, reservation sweep) — tsc clean, full smoke test PASSED (auth, events, request→approve→pay→ticket, check-in 409 on double, attendees stats+CSV, profile, RBAC 401/403/404, capacity race: 1×200 + 1×409).
+2. ✅ `.env.example` + env-driven `prisma/seed.ts` (demo data opt-in via SEED_DEMO_DATA).
+3. ✅ README.md rewritten (setup, env, Razorpay, testing, deployment).
+4. IN PROGRESS (background agents): frontend foundation+public+customer (agent-2); backend integration tests vs `walkandtalk_test` DB (agent-3, includes src/server.ts→src/app.ts split).
+5. Then: admin dashboard frontend (agent after agent-2), final builds/tests, final report. Razorpay code complete but untested without keys — documented in README; endpoints fail closed (verified /payments/config → enabled:false).

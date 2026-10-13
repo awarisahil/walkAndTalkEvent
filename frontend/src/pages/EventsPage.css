@@ -1,0 +1,28 @@
+.events-page {
+  padding-block: 40px 72px;
+}
+
+.events-page-header {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.events-filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 28px;
+  align-items: end;
+}
+
+.events-filters .field {
+  margin-bottom: 0;
+}
+
+@media (max-width: 720px) {
+  .events-filters {
+    grid-template-columns: 1fr;
+  }
+}

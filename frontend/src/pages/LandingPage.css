@@ -1,0 +1,71 @@
+.landing-hero {
+  background:
+    radial-gradient(60% 80% at 15% 0%, var(--color-accent-soft) 0%, transparent 60%),
+    radial-gradient(50% 70% at 90% 10%, #fdf3e3 0%, transparent 55%),
+    var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.landing-hero-inner {
+  padding-block: 88px 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.landing-hero-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.landing-hero-title {
+  font-size: clamp(2.4rem, 5.5vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.landing-hero-subcopy {
+  font-size: 1.15rem;
+  color: var(--color-text-secondary);
+  max-width: 560px;
+}
+
+.landing-hero-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.landing-events {
+  padding-block: 48px 72px;
+}
+
+.landing-events-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.landing-events-viewall {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+@media (max-width: 640px) {
+  .landing-hero-inner {
+    padding-block: 56px 48px;
+  }
+}
