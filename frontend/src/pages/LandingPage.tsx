@@ -18,6 +18,22 @@ export default function LandingPage() {
   return (
     <div className="landing">
       <section className="landing-hero">
+        <svg
+          className="landing-hero-trail"
+          viewBox="0 0 1200 90"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          aria-hidden="true"
+          preserveAspectRatio="none"
+        >
+          <path d="M0 70C150 30 300 88 450 58s300-52 450-22 220 8 300-18" strokeDasharray="2 12" />
+          <ellipse cx="320" cy="62" rx="5" ry="8" transform="rotate(-14 320 62)" />
+          <ellipse cx="342" cy="66" rx="5" ry="8" transform="rotate(-14 342 66)" />
+          <ellipse cx="820" cy="40" rx="5" ry="8" transform="rotate(10 820 40)" />
+          <ellipse cx="842" cy="38" rx="5" ry="8" transform="rotate(10 842 38)" />
+        </svg>
         <div className="container landing-hero-inner">
           <p className="landing-hero-eyebrow">Walk &amp; Talk Events</p>
           <h1 className="landing-hero-title">
@@ -39,7 +55,24 @@ export default function LandingPage() {
 
       <section className="landing-events container">
         <div className="landing-events-header">
-          <h2 className="section-title">Upcoming events</h2>
+          <h2 className="section-title">
+            <svg
+              className="section-title-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 21c-4.5-2.5-7-6-7-10a7 7 0 0 1 14 0c0 4-2.5 7.5-7 10z" />
+              <path d="M12 3v18" strokeDasharray="1 4" />
+            </svg>
+            Upcoming events
+          </h2>
           <Link to="/events" className="landing-events-viewall">
             View all →
           </Link>

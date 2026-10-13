@@ -1,13 +1,21 @@
 .landing-hero {
+  position: relative;
   background:
-    radial-gradient(60% 80% at 15% 0%, var(--color-accent-soft) 0%, transparent 60%),
-    radial-gradient(50% 70% at 90% 10%, #fdf3e3 0%, transparent 55%),
-    var(--color-bg-subtle);
+    linear-gradient(
+      100deg,
+      rgba(74, 47, 36, 0.92) 0%,
+      rgba(74, 47, 36, 0.72) 45%,
+      rgba(74, 47, 36, 0.45) 100%
+    ),
+    url("https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600&q=80")
+      center 35% / cover no-repeat,
+    var(--walnut);
   border-bottom: 1px solid var(--color-border);
 }
 
 .landing-hero-inner {
-  padding-block: 88px 72px;
+  position: relative;
+  padding-block: 96px 84px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -17,20 +25,22 @@
 .landing-hero-eyebrow {
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--beige);
 }
 
 .landing-hero-title {
   font-size: clamp(2.4rem, 5.5vw, 4rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--cream);
+  max-width: 640px;
 }
 
 .landing-hero-subcopy {
   font-size: 1.15rem;
-  color: var(--color-text-secondary);
+  color: rgba(247, 242, 232, 0.88);
   max-width: 560px;
 }
 
@@ -39,6 +49,43 @@
   gap: 12px;
   margin-top: 10px;
   flex-wrap: wrap;
+}
+
+/* Warm CTA on the dark hero: cream button, walnut text, hover lift */
+.landing-hero .btn-primary {
+  background: var(--beige);
+  color: var(--walnut);
+  border-color: transparent;
+}
+
+.landing-hero .btn-primary:hover:not(:disabled) {
+  background: var(--cream);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.landing-hero .btn-secondary {
+  background: transparent;
+  color: var(--cream);
+  border-color: rgba(247, 242, 232, 0.5);
+}
+
+.landing-hero .btn-secondary:hover:not(:disabled) {
+  background: rgba(247, 242, 232, 0.12);
+  border-color: rgba(247, 242, 232, 0.75);
+}
+
+/* Decorative walking-trail accent along the hero's bottom edge */
+.landing-hero-trail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 90px;
+  color: var(--beige);
+  opacity: 0.22;
+  pointer-events: none;
 }
 
 .landing-events {
@@ -66,6 +113,6 @@
 
 @media (max-width: 640px) {
   .landing-hero-inner {
-    padding-block: 56px 48px;
+    padding-block: 64px 72px;
   }
 }

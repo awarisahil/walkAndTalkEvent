@@ -42,7 +42,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
+  color: var(--forest);
+  opacity: 0.75;
   background: linear-gradient(135deg, var(--color-accent-soft) 0%, var(--color-bg-muted) 100%);
 }
 
@@ -58,8 +59,8 @@
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-accent);
+  letter-spacing: 0.05em;
+  color: var(--forest);
 }
 
 .event-card-title {
@@ -85,4 +86,5 @@
 .event-card-price {
   font-weight: 700;
   font-size: 0.95rem;
+  color: var(--walnut);
 }

@@ -10,7 +10,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: 12px;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .ticket-qr-fallback {

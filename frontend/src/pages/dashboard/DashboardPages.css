@@ -35,6 +35,7 @@
 
 .stat-card {
   padding: 20px;
+  border-top: 3px solid var(--beige);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -177,7 +178,7 @@
 .timeline-step.is-current .timeline-dot {
   background: var(--color-accent-soft);
   color: var(--color-accent);
-  box-shadow: 0 0 0 4px rgba(91, 73, 242, 0.12);
+  box-shadow: 0 0 0 4px var(--color-accent-ring);
 }
 
 .timeline-step.is-rejected .timeline-dot {

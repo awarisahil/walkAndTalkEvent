@@ -84,7 +84,7 @@ export default function PayRequestPage() {
         name: "Walk & Talk Events",
         description: request.event.title,
         prefill: { name: user?.name, email: user?.email },
-        theme: { color: "#5b49f2" },
+        theme: { color: "#795548" },
         handler: (response) => {
           void (async () => {
             try {

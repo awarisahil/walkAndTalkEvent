@@ -55,6 +55,7 @@
 
 .stat-card {
   padding: 20px;
+  border-top: 3px solid var(--beige);
   display: flex;
   flex-direction: column;
   gap: 4px;

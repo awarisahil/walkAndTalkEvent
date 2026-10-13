@@ -1,7 +1,7 @@
 .dialog-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(16, 20, 24, 0.45);
+  background: rgba(74, 47, 36, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
