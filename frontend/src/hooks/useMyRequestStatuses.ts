@@ -5,8 +5,8 @@ import type { TicketRequest } from "../types";
 
 /**
  * Maps eventId → the customer's ticket request for that event.
- * Returns null while the session/request status is unknown, and an
- * (possibly empty) Map once loaded. Non-customers get null.
+ * Returns null while the session/request status is unknown, and a
+ * (possibly empty) Map once loaded. Non-customers always get null.
  */
 export function useMyRequestStatuses(): Map<string, TicketRequest> | null {
   const { user, loading } = useAuth();
@@ -15,13 +15,10 @@ export function useMyRequestStatuses(): Map<string, TicketRequest> | null {
     TicketRequest
   > | null>(null);
 
-  useEffect(() => {
-    if (loading) return;
+  const isCustomer = !loading && user?.role === "CUSTOMER";
 
-    if (!user || user.role !== "CUSTOMER") {
-      setStatuses(null);
-      return;
-    }
+  useEffect(() => {
+    if (!isCustomer) return;
 
     let cancelled = false;
 
@@ -39,7 +36,9 @@ export function useMyRequestStatuses(): Map<string, TicketRequest> | null {
     return () => {
       cancelled = true;
     };
-  }, [user, loading]);
+  }, [isCustomer, user?.id]);
+
+  if (!isCustomer) return null;
 
   return statuses;
 }

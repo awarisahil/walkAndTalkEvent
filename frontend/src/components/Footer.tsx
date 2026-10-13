@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 import "./Footer.css";
 
 export default function Footer() {
+  const { user } = useAuth();
+
   return (
     <footer className="footer">
       <div className="container footer-inner">
@@ -11,8 +14,12 @@ export default function Footer() {
         </div>
         <nav className="footer-nav" aria-label="Footer">
           <Link to="/events">Browse events</Link>
-          <Link to="/login">Log in</Link>
-          <Link to="/register">Create account</Link>
+          {user ? null : (
+            <>
+              <Link to="/login">Log in</Link>
+              <Link to="/register">Create account</Link>
+            </>
+          )}
         </nav>
       </div>
     </footer>

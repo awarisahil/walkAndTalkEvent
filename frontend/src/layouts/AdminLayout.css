@@ -55,6 +55,13 @@
   top: 20px;
 }
 
+.admin-nav-footer {
+  position: static;
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}
+
 .admin-nav-link {
   padding: 10px 14px;
   border-radius: var(--radius);

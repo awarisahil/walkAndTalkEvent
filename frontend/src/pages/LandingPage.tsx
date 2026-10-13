@@ -33,9 +33,6 @@ export default function LandingPage() {
             <Link to="/events" className="btn btn-primary">
               Browse events
             </Link>
-            <Link to="/register" className="btn btn-secondary">
-              Create account
-            </Link>
           </div>
         </div>
       </section>

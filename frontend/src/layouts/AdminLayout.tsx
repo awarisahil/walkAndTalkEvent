@@ -45,6 +45,12 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
+
+        <nav className="admin-nav admin-nav-footer" aria-label="Site">
+          <NavLink to="/events" className="admin-nav-link" onClick={() => setSidebarOpen(false)}>
+            ← Browse events
+          </NavLink>
+        </nav>
       </aside>
 
       <div className="admin-main">
