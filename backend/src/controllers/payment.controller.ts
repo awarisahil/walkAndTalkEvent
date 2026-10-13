@@ -1,36 +1,43 @@
-import { Response } from "express";
+import type { Request, Response } from "express";
+import type { AuthenticatedRequest } from "../middleware/auth.middleware";
+import { createPaymentSchema } from "../validators/payment.validator";
 import {
-  AuthenticatedRequest,
-} from "../middleware/auth.middleware";
+  adminPaymentQuerySchema,
+  verifyPaymentSchema,
+} from "../validators/query.validator";
 import {
-  createPaymentSchema,
-} from "../validators/payment.validator";
-import {
+  completePaymentDev,
+  createOrderForPayment,
   createPayment,
   getMyPayments,
   getPaymentById,
-  completePayment,
+  listPaymentsForAdmin,
+  verifyAndFulfillPayment,
 } from "../services/payment.service";
-export async function createPaymentController(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
-    }
+import {
+  getRazorpayKeyId,
+  razorpayEnabled,
+} from "../services/razorpay.service";
+import { asyncHandler } from "../utils/asyncHandler";
+import { ok, parsePagination, badRequest } from "../utils/response";
+import { unauthorized } from "../utils/AppError";
+
+export const getPaymentConfigController = asyncHandler(
+  async (_req: Request, res: Response) => {
+    return ok(res, {
+      razorpayEnabled: razorpayEnabled(),
+      razorpayKeyId: getRazorpayKeyId(),
+    });
+  },
+);
+
+export const createPaymentController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
 
     const validation = createPaymentSchema.safeParse(req.body);
-
     if (!validation.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors: validation.error.flatten(),
-      });
+      throw badRequest("Invalid input", validation.error.flatten());
     }
 
     const payment = await createPayment(
@@ -38,153 +45,96 @@ export async function createPaymentController(
       validation.data,
     );
 
-    return res.status(201).json({
-      success: true,
+    return ok(res, payment, {
       message: "Payment initialized successfully",
-      data: payment,
+      status: 201,
     });
-  } catch (error) {
-    console.error("Create payment error:", error);
+  },
+);
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to initialize payment";
+export const createOrderController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
 
-    const statusCode =
-      message.includes("permission")
-        ? 403
-        : message.includes("not found")
-          ? 404
-          : 400;
+    const order = await createOrderForPayment(
+      req.user.userId,
+      String(req.params.id),
+    );
 
-    return res.status(statusCode).json({
-      success: false,
-      message,
-    });
-  }
-}
+    return ok(res, order);
+  },
+);
 
-export async function getMyPaymentsController(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
+export const verifyPaymentController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
+
+    const validation = verifyPaymentSchema.safeParse(req.body);
+    if (!validation.success) {
+      throw badRequest("Invalid input", validation.error.flatten());
     }
+
+    const result = await verifyAndFulfillPayment(
+      req.user.userId,
+      validation.data,
+    );
+
+    return ok(res, result, {
+      message: "Payment verified successfully",
+    });
+  },
+);
+
+export const completePaymentController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
+
+    const result = await completePaymentDev(
+      req.user.userId,
+      String(req.params.id),
+    );
+
+    return ok(res, result, {
+      message: "Payment completed and ticket generated (dev mode)",
+    });
+  },
+);
+
+export const getMyPaymentsController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
 
     const payments = await getMyPayments(req.user.userId);
 
-    return res.status(200).json({
-      success: true,
-      data: payments,
-    });
-  } catch (error) {
-    console.error("Get my payments error:", error);
+    return ok(res, payments);
+  },
+);
 
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch payments",
-    });
-  }
-}
-
-
-export async function getPaymentByIdController(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
-    }
-
-   const id = Array.isArray(req.params.id)
-  ? req.params.id[0]
-  : req.params.id;
+export const getPaymentByIdController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
 
     const payment = await getPaymentById(
       req.user.userId,
-      id,
+      String(req.params.id),
     );
 
-    return res.status(200).json({
-      success: true,
-      data: payment,
-    });
-  } catch (error) {
-    console.error("Get payment error:", error);
+    return ok(res, payment);
+  },
+);
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to fetch payment";
-
-    const statusCode =
-      message.includes("permission")
-        ? 403
-        : message.includes("not found")
-          ? 404
-          : 400;
-
-    return res.status(statusCode).json({
-      success: false,
-      message,
-    });
-  }
-}
-
-export async function completePaymentController(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
+export const listPaymentsForAdminController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const query = adminPaymentQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      throw badRequest("Invalid query parameters", query.error.flatten());
     }
 
-     const id = Array.isArray(req.params.id)
-  ? req.params.id[0]
-  : req.params.id;
-
-    const result = await completePayment(
-      req.user.userId,
-      id,
+    const payments = await listPaymentsForAdmin(
+      query.data,
+      parsePagination(req.query),
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Payment completed and ticket generated successfully",
-      data: result,
-    });
-  } catch (error) {
-    console.error("Complete payment error:", error);
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to complete payment";
-
-    const statusCode =
-      message.includes("permission")
-        ? 403
-        : message.includes("not found")
-          ? 404
-          : 400;
-
-    return res.status(statusCode).json({
-      success: false,
-      message,
-    });
-  }
-}
+    return ok(res, payments);
+  },
+);

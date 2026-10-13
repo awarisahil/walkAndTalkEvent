@@ -1,275 +1,118 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import {
   createEventSchema,
   updateEventSchema,
 } from "../validators/event.validator";
 import {
+  adminEventQuerySchema,
+  eventQuerySchema,
+} from "../validators/query.validator";
+import {
   createEvent,
-  getPublishedEvents,
+  getAdminEventById,
   getPublishedEventById,
-  publishEvent,
-  updateEvent,
+  listAdminEvents,
+  listPublicEvents,
   cancelEvent,
   completeEvent,
+  publishEvent,
+  updateEvent,
 } from "../services/event.service";
-export async function completeEventController(
-  req: Request,
-  res: Response,
-) {
-  try {
-    const eventId = String(req.params.id);
+import { asyncHandler } from "../utils/asyncHandler";
+import { ok, parsePagination, badRequest } from "../utils/response";
 
-    const event = await completeEvent(eventId);
-
-    return res.status(200).json({
-      success: true,
-      message: "Event completed successfully",
-      data: event,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "Event not found") {
-        return res.status(404).json({
-          success: false,
-          message: error.message,
-        });
-      }
-
-      if (
-        error.message === "Event is already completed" ||
-        error.message ===
-          "Only published events can be completed"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: error.message,
-        });
-      }
+export const getEventsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const query = eventQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      throw badRequest("Invalid query parameters", query.error.flatten());
     }
 
-    console.error("Complete event error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to complete event",
-    });
-  }
-}
-export async function cancelEventController(
-  req: Request,
-  res: Response,
-) {
-  try {
-    const eventId = String(req.params.id);
-
-    const event = await cancelEvent(eventId);
-
-    return res.status(200).json({
-      success: true,
-      message: "Event cancelled successfully",
-      data: event,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "Event not found") {
-        return res.status(404).json({
-          success: false,
-          message: error.message,
-        });
-      }
-
-      if (
-        error.message === "Event is already cancelled" ||
-        error.message === "Completed events cannot be cancelled"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: error.message,
-        });
-      }
-    }
-
-    console.error("Cancel event error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to cancel event",
-    });
-  }
-}
-export async function updateEventController(
-  req: Request,
-  res: Response,
-) {
-  try {
-    const eventId = String(req.params.id);
-
-    const validation = updateEventSchema.safeParse(req.body);
-
-    if (!validation.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors: validation.error.flatten(),
-      });
-    }
-
-    const event = await updateEvent(
-      eventId,
-      validation.data,
+    const events = await listPublicEvents(
+      query.data,
+      parsePagination(req.query),
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Event updated successfully",
-      data: event,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "Event not found") {
-        return res.status(404).json({
-          success: false,
-          message: error.message,
-        });
-      }
+    return ok(res, events);
+  },
+);
 
-      if (
-        error.message ===
-        "Cancelled or completed events cannot be edited"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: error.message,
-        });
-      }
+export const getAdminEventsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const query = adminEventQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      throw badRequest("Invalid query parameters", query.error.flatten());
     }
 
-    console.error("Update event error:", error);
+    const events = await listAdminEvents(
+      query.data,
+      parsePagination(req.query),
+    );
 
-    return res.status(500).json({
-      success: false,
-      message: "Failed to update event",
-    });
-  }
-}
-export async function publishEventController(
-  req: Request,
-  res: Response,
-) {
-  try {
-    const event = await publishEvent(String(req.params.id));
+    return ok(res, events);
+  },
+);
 
-    return res.status(200).json({
-      success: true,
-      message: "Event published successfully",
-      data: event,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "Event not found") {
-        return res.status(404).json({
-          success: false,
-          message: "Event not found",
-        });
-      }
-
-      if (
-        error.message === "Only draft events can be published"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: error.message,
-        });
-      }
-    }
-
-    console.error("Publish event error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-}
-export async function getEventsController(
-  _req: Request,
-  res: Response,
-) {
-  try {
-    const events = await getPublishedEvents();
-
-    return res.status(200).json({
-      success: true,
-      data: events,
-    });
-  } catch (error) {
-    console.error("Get events error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-}
-
-export async function getEventByIdController(
-  req: Request,
-  res: Response,
-) {
-  try {
+export const getEventByIdController = asyncHandler(
+  async (req: Request, res: Response) => {
     const event = await getPublishedEventById(String(req.params.id));
+    return ok(res, event);
+  },
+);
 
-    return res.status(200).json({
-      success: true,
-      data: event,
-    });
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === "Event not found"
-    ) {
-      return res.status(404).json({
-        success: false,
-        message: "Event not found",
-      });
-    }
+export const getAdminEventByIdController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const event = await getAdminEventById(String(req.params.id));
+    return ok(res, event);
+  },
+);
 
-    console.error("Get event error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-}
-export async function createEventController(
-  req: Request,
-  res: Response,
-) {
-  try {
+export const createEventController = asyncHandler(
+  async (req: Request, res: Response) => {
     const result = createEventSchema.safeParse(req.body);
-
     if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid input",
-        errors: result.error.flatten(),
-      });
+      throw badRequest("Invalid input", result.error.flatten());
     }
 
     const event = await createEvent(result.data);
 
-    return res.status(201).json({
-      success: true,
+    return ok(res, event, {
       message: "Event created successfully",
-      data: event,
+      status: 201,
     });
-  } catch (error) {
-    console.error("Create event error:", error);
+  },
+);
 
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-}
+export const updateEventController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const validation = updateEventSchema.safeParse(req.body);
+    if (!validation.success) {
+      throw badRequest("Invalid input", validation.error.flatten());
+    }
+
+    const event = await updateEvent(String(req.params.id), validation.data);
+
+    return ok(res, event, { message: "Event updated successfully" });
+  },
+);
+
+export const publishEventController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const event = await publishEvent(String(req.params.id));
+    return ok(res, event, { message: "Event published successfully" });
+  },
+);
+
+export const cancelEventController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const event = await cancelEvent(String(req.params.id));
+    return ok(res, event, { message: "Event cancelled successfully" });
+  },
+);
+
+export const completeEventController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const event = await completeEvent(String(req.params.id));
+    return ok(res, event, { message: "Event completed successfully" });
+  },
+);

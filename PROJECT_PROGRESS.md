@@ -39,13 +39,23 @@
 ## Files changed so far
 - `backend/scripts/ensure-db.ts` (new): creates DATABASE from .env if missing.
 - `backend/.env`: DB name placeholder fixed to `walkandtalk` (no values changed otherwise).
+- `backend/prisma/schema.prisma`: Ticket += usedAt/usedById (+ relation "CheckedInTickets"); Payment.providerOrderId now `@unique`.
+- Migrations added: `20261013085005_add_checkin_fields`, `20261013090500_unique_provider_order_id` (NB: shell is non-interactive — `prisma migrate dev` refuses; use `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` → write into new migrations dir → `migrate deploy`).
+- New backend files: `utils/AppError.ts`, `utils/asyncHandler.ts`, `utils/response.ts` (ok/paged/parsePagination), `utils/crypto.ts` (qr token, timing-safe eq), `middleware/error.middleware.ts` (AppError/Zod/Prisma mapping + 404), `middleware/rateLimit.middleware.ts`, `services/reservation.service.ts` (expiry + capacity), `services/razorpay.service.ts`, `services/user.service.ts`, `validators/user.validator.ts`, `validators/query.validator.ts`, `controllers/user.controller.ts`, `controllers/webhook.controller.ts` (Razorpay webhook, raw body, idempotent).
+- Rewritten: `services/event.service.ts` (public/admin lists w/ search+filter+pagination+availability, capacity guard on update), `services/ticketRequest.service.ts` (FOR UPDATE event lock on approve, admin filters, customer cancel, detail w/ ownership), `services/payment.service.ts` (idempotent `fulfillPayment`, payment retry reuse, razorpay order/verify, admin list, dev-only `completePaymentDev`), `services/ticket.service.ts` (attendees+stats, CSV export, lookup, atomic check-in, qrCode populated), all 5 route files (+webhook planned), all controllers thinned to asyncHandler+ok pattern, `utils/jwt.ts` (env expiry), `utils/ticket.ts` (crypto random).
+- Deps added: `express-rate-limit`, `razorpay`.
+
+## ⚠️ Mid-refactor state — backend NOT yet verified
+`server.ts` is still the OLD version (no error middleware, no CORS allowlist, no webhook raw-body mount, no graceful shutdown, no rate-limiter visible). Controllers/routes reference each other consistently, but **`npx tsc --noEmit` has NOT been run since the rewrite** — expect a handful of type errors to fix first.
+Still to write: new `server.ts`, `backend/.env.example`, updated `prisma/seed.ts` (env-driven admin + optional demo data).
 
 ## Build/test results
-- backend `npx tsc --noEmit`: PASS (baseline)
-- frontend `npm run build`: PASS (baseline)
-- `prisma migrate deploy`: applied; schema up to date.
+- backend `npx tsc --noEmit`: PASS at baseline; NOT yet re-run after rewrite.
+- frontend `npm run build`: PASS (deps installed).
+- DB `walkandtalk`: migrated through `20261013090500_unique_provider_order_id`, admin seeded.
 
 ## Next exact actions
-1. Read backend src (server, controllers, services, middleware, validators).
-2. Implement M1 (error middleware + helpers, health, CORS/rate-limit, env example, shutdown).
-3. Then M1b/M1c profile + event endpoints.
+1. Rewrite `backend/src/server.ts`: dotenv → webhook raw route BEFORE express.json → helmet/cors(allowlist env)/json(urlencoded,morgan) → routes → 404 → error middleware → listen + SIGINT/SIGTERM graceful shutdown (server.close + prisma.$disconnect) + optional reservation-sweep interval.
+2. `npx tsc --noEmit` → fix type errors.
+3. Boot server, curl smoke-test: /api/health, register/login, event CRUD+publish, request→approve→dev-complete payment, check-in flow.
+4. `.env.example`, seed.ts, then frontend milestones M5+.

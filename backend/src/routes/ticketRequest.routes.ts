@@ -1,13 +1,14 @@
 import { Router } from "express";
 import {
   createTicketRequestController,
+  getTicketRequestByIdController,
   getTicketRequestsForAdminController,
   approveTicketRequestController,
   rejectTicketRequestController,
+  cancelTicketRequestController,
   getMyTicketRequestsController,
-  getMyPaymentPendingRequestsController
+  getMyPaymentPendingRequestsController,
 } from "../controllers/ticketRequest.controller";
-
 import { authenticate } from "../middleware/auth.middleware";
 import { authorize } from "../middleware/role.middleware";
 
@@ -49,6 +50,16 @@ router.patch(
   authorize("ADMIN"),
   rejectTicketRequestController,
 );
-
+router.patch(
+  "/:id/cancel",
+  authenticate,
+  authorize("CUSTOMER"),
+  cancelTicketRequestController,
+);
+router.get(
+  "/:id",
+  authenticate,
+  getTicketRequestByIdController,
+);
 
 export default router;

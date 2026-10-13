@@ -130,7 +130,7 @@ model Payment {
   status PaymentStatus @default(PENDING)
 
   provider          String?
-  providerOrderId   String?
+  providerOrderId   String?   @unique
   providerPaymentId String?
 
   createdAt DateTime @default(now())

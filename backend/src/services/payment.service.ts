@@ -1,119 +1,395 @@
+import { Prisma } from "../generated/prisma/client";
 import prisma from "../config/prisma";
-import { CreatePaymentInput } from "../validators/payment.validator";
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+} from "../utils/AppError";
+import type { Pagination } from "../utils/response";
+import { paged } from "../utils/response";
 import { generateTicketNumber } from "../utils/ticket";
+import { generateQrToken } from "../utils/crypto";
+import {
+  countOccupiedPlaces,
+  expireStaleReservations,
+} from "./reservation.service";
+import {
+  createRazorpayOrder,
+  getRazorpayKeyId,
+  razorpayEnabled,
+  verifyPaymentSignature,
+} from "./razorpay.service";
+import type { CreatePaymentInput } from "../validators/payment.validator";
+
+/**
+ * Internal, idempotent payment fulfillment. This is the ONLY code path
+ * that may mark a payment successful and create a ticket; it is invoked
+ * after trustworthy confirmation (verified Razorpay signature or webhook).
+ *
+ * Idempotency: repeated calls for an already-SUCCESS payment return the
+ * existing ticket instead of creating a new one.
+ */
+export async function fulfillPayment(
+  paymentId: string,
+  options?: { providerPaymentId?: string },
+) {
+  return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`SELECT "id" FROM "Payment" WHERE "id" = ${paymentId} FOR UPDATE`,
+    );
+
+    const payment = await tx.payment.findUnique({
+      where: { id: paymentId },
+      include: {
+        ticketRequest: { include: { event: true } },
+      },
+    });
+
+    if (!payment) throw notFound("Payment not found");
+
+    if (payment.status === "SUCCESS") {
+      const existingTicket = await tx.ticket.findUnique({
+        where: { ticketRequestId: payment.ticketRequestId },
+        select: {
+          id: true,
+          ticketNumber: true,
+          status: true,
+          createdAt: true,
+        },
+      });
+      return {
+        payment: {
+          id: payment.id,
+          amount: payment.amount,
+          status: payment.status,
+        },
+        ticket: existingTicket,
+        alreadyProcessed: true,
+      };
+    }
+
+    if (payment.status !== "PENDING") {
+      throw conflict(
+        `Payment is ${payment.status.toLowerCase()} and cannot be fulfilled`,
+      );
+    }
+
+    if (payment.ticketRequest.status !== "PAYMENT_PENDING") {
+      throw conflict("Ticket request is not awaiting payment");
+    }
+
+    if (payment.ticketRequest.event.status !== "PUBLISHED") {
+      throw conflict(
+        "This event is no longer available; payment has not been captured",
+      );
+    }
+
+    // Re-verify capacity under lock: the reservation is held, but the
+    // event capacity may have been reduced since approval.
+    const occupied = await countOccupiedPlaces(tx, payment.eventId);
+    if (occupied > payment.ticketRequest.event.capacity) {
+      throw conflict(
+        "Event capacity changed while processing payment; payment has not been captured",
+      );
+    }
+
+    const updatedPayment = await tx.payment.update({
+      where: { id: paymentId },
+      data: {
+        status: "SUCCESS",
+        ...(options?.providerPaymentId
+          ? { providerPaymentId: options.providerPaymentId }
+          : {}),
+      },
+    });
+
+    await tx.ticketRequest.update({
+      where: { id: payment.ticketRequestId },
+      data: { status: "PAID" },
+    });
+
+    let ticket;
+    try {
+      ticket = await tx.ticket.create({
+        data: {
+          ticketNumber: generateTicketNumber(),
+          userId: payment.userId,
+          eventId: payment.eventId,
+          ticketRequestId: payment.ticketRequestId,
+          status: "ACTIVE",
+          qrCode: generateQrToken(),
+        },
+        select: {
+          id: true,
+          ticketNumber: true,
+          status: true,
+          qrCode: true,
+          createdAt: true,
+        },
+      });
+    } catch (error) {
+      // Unique constraint on ticketRequestId: another process already
+      // issued the ticket — recover gracefully instead of duplicating.
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code: string }).code === "P2002"
+      ) {
+        ticket = await tx.ticket.findUnique({
+          where: { ticketRequestId: payment.ticketRequestId },
+          select: {
+            id: true,
+            ticketNumber: true,
+            status: true,
+            qrCode: true,
+            createdAt: true,
+          },
+        });
+      } else {
+        throw error;
+      }
+    }
+
+    return {
+      payment: {
+        id: updatedPayment.id,
+        amount: updatedPayment.amount,
+        status: updatedPayment.status,
+      },
+      ticket,
+      alreadyProcessed: false,
+    };
+  });
+}
+
 export async function createPayment(
   userId: string,
   input: CreatePaymentInput,
 ) {
+  await expireStaleReservations();
+
   const request = await prisma.ticketRequest.findUnique({
-    where: {
-      id: input.ticketRequestId,
-    },
-    include: {
-      event: true,
-      payment: true,
-    },
+    where: { id: input.ticketRequestId },
+    include: { event: true, payment: true },
   });
 
-  if (!request) {
-    throw new Error("Ticket request not found");
-  }
+  if (!request) throw notFound("Ticket request not found");
 
   if (request.userId !== userId) {
-    throw new Error("You do not have permission to pay for this request");
+    throw forbidden(
+      "You do not have permission to pay for this ticket request",
+    );
   }
 
   if (request.status !== "PAYMENT_PENDING") {
-    throw new Error(
+    throw badRequest(
       "Payment can only be started for an approved ticket request",
     );
   }
 
-  if (request.payment) {
-    throw new Error("Payment has already been initiated for this request");
-  }
-
   if (request.event.status !== "PUBLISHED") {
-    throw new Error("This event is no longer available");
+    throw conflict("This event is no longer available");
   }
 
-  const payment = await prisma.payment.create({
-    data: {
-      userId,
-      eventId: request.eventId,
-      ticketRequestId: request.id,
-      amount: request.event.ticketPrice,
-      status: "PENDING",
-      provider: "RAZORPAY",
-    },
-    select: {
-      id: true,
-      amount: true,
-      status: true,
-      provider: true,
-      createdAt: true,
-      event: {
-        select: {
-          id: true,
-          title: true,
-          date: true,
-          venue: true,
-        },
-      },
-      ticketRequest: {
-        select: {
-          id: true,
-          status: true,
-        },
-      },
-    },
-  });
+  if (request.payment) {
+    if (request.payment.status === "PENDING") {
+      // Idempotent re-init: return the existing payment so the client
+      // can resume the same checkout attempt.
+      return request.payment;
+    }
+    if (request.payment.status === "SUCCESS") {
+      throw conflict("This request has already been paid");
+    }
+    // FAILED payments are retried by reusing the same payment row so
+    // the one-payment-per-request invariant holds.
+  }
 
-  return payment;
-}
-export async function getMyPayments(userId: string) {
-  return prisma.payment.findMany({
-    where: {
-      userId,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+  const data = request.payment
+    ? {
+        where: { id: request.payment.id },
+        data: {
+          status: "PENDING" as const,
+          amount: request.event.ticketPrice,
+          provider: "RAZORPAY",
+          providerOrderId: null,
+          providerPaymentId: null,
+        },
+      }
+    : null;
+
+  const payment = data
+    ? await prisma.payment.update(data)
+    : await prisma.payment.create({
+        data: {
+          userId,
+          eventId: request.eventId,
+          ticketRequestId: request.id,
+          amount: request.event.ticketPrice,
+          status: "PENDING",
+          provider: "RAZORPAY",
+        },
+      });
+
+  return prisma.payment.findUnique({
+    where: { id: payment.id },
     select: {
       id: true,
       amount: true,
       status: true,
       provider: true,
       providerOrderId: true,
-      providerPaymentId: true,
       createdAt: true,
-      updatedAt: true,
       event: {
-        select: {
-          id: true,
-          title: true,
-          date: true,
-          venue: true,
-        },
+        select: { id: true, title: true, date: true, venue: true },
       },
-      ticketRequest: {
-        select: {
-          id: true,
-          status: true,
-        },
-      },
+      ticketRequest: { select: { id: true, status: true } },
     },
   });
 }
 
-export async function getPaymentById(
+export async function createOrderForPayment(
+  userId: string,
+  paymentId: string,
+) {
+  if (!razorpayEnabled()) {
+    throw badRequest(
+      "Online payments are not configured yet; please contact the organizer",
+    );
+  }
+
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
+    include: { ticketRequest: true },
+  });
+
+  if (!payment) throw notFound("Payment not found");
+
+  if (payment.userId !== userId) {
+    throw forbidden(
+      "You do not have permission to pay for this ticket request",
+    );
+  }
+
+  if (payment.status !== "PENDING") {
+    throw conflict("This payment can no longer be processed");
+  }
+
+  if (payment.ticketRequest.status !== "PAYMENT_PENDING") {
+    throw conflict("Ticket request is not awaiting payment");
+  }
+
+  // Amount always comes from the database, never the client.
+  const amount = Number(payment.amount);
+  if (!Number.isFinite(amount) || amount < 0) {
+    throw conflict("Invalid payment amount; please contact support");
+  }
+
+  const order = await createRazorpayOrder({
+    receipt: payment.id,
+    amountInPaise: Math.round(amount * 100),
+  });
+
+  await prisma.payment.update({
+    where: { id: payment.id },
+    data: { providerOrderId: order.id },
+  });
+
+  return {
+    order: {
+      id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+    },
+    keyId: getRazorpayKeyId(),
+    paymentId: payment.id,
+  };
+}
+
+export async function verifyAndFulfillPayment(
+  userId: string,
+  input: {
+    razorpayOrderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
+  },
+) {
+  const payment = await prisma.payment.findUnique({
+    where: { providerOrderId: input.razorpayOrderId },
+    select: { id: true, userId: true },
+  });
+
+  if (!payment) throw notFound("Payment not found");
+
+  if (payment.userId !== userId) {
+    throw forbidden(
+      "You do not have permission to verify this payment",
+    );
+  }
+
+  const valid = verifyPaymentSignature({
+    orderId: input.razorpayOrderId,
+    paymentId: input.razorpayPaymentId,
+    signature: input.razorpaySignature,
+  });
+
+  if (!valid) {
+    throw badRequest("Payment verification failed");
+  }
+
+  return fulfillPayment(payment.id, {
+    providerPaymentId: input.razorpayPaymentId,
+  });
+}
+
+/**
+ * DEV-ONLY simulation of payment success. Never mounted in production
+ * (see payment.routes.ts).
+ */
+export async function completePaymentDev(
   userId: string,
   paymentId: string,
 ) {
   const payment = await prisma.payment.findUnique({
-    where: {
-      id: paymentId,
+    where: { id: paymentId },
+    select: { userId: true },
+  });
+
+  if (!payment) throw notFound("Payment not found");
+
+  if (payment.userId !== userId) {
+    throw forbidden(
+      "You do not have permission to complete this payment",
+    );
+  }
+
+  return fulfillPayment(paymentId);
+}
+
+export async function getMyPayments(userId: string) {
+  return prisma.payment.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      amount: true,
+      status: true,
+      provider: true,
+      providerOrderId: true,
+      createdAt: true,
+      updatedAt: true,
+      event: {
+        select: { id: true, title: true, date: true, venue: true },
+      },
+      ticketRequest: { select: { id: true, status: true } },
     },
+  });
+}
+
+export async function getPaymentById(userId: string, paymentId: string) {
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
     select: {
       id: true,
       userId: true,
@@ -133,134 +409,67 @@ export async function getPaymentById(
           ticketPrice: true,
         },
       },
-      ticketRequest: {
-        select: {
-          id: true,
-          status: true,
-        },
-      },
+      ticketRequest: { select: { id: true, status: true } },
     },
   });
 
-  if (!payment) {
-    throw new Error("Payment not found");
-  }
+  if (!payment) throw notFound("Payment not found");
 
   if (payment.userId !== userId) {
-    throw new Error(
+    throw forbidden(
       "You do not have permission to view this payment",
     );
   }
 
-  return payment;
+  const { userId: _ownerId, ...safePayment } = payment;
+  return safePayment;
 }
 
-export async function completePayment(
-  userId: string,
-  paymentId: string,
+export async function listPaymentsForAdmin(
+  query: {
+    status?: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
+    eventId?: string;
+    search?: string;
+  },
+  pagination: Pagination,
 ) {
-  return prisma.$transaction(async (tx) => {
-    const payment = await tx.payment.findUnique({
-      where: {
-        id: paymentId,
-      },
-      include: {
-        ticketRequest: true,
-        event: true,
-      },
-    });
+  const where: Prisma.PaymentWhereInput = {};
 
-    if (!payment) {
-      throw new Error("Payment not found");
-    }
-
-    if (payment.userId !== userId) {
-      throw new Error(
-        "You do not have permission to complete this payment",
-      );
-    }
-
-    if (payment.status === "SUCCESS") {
-      throw new Error("Payment has already been completed");
-    }
-
-    if (payment.status !== "PENDING") {
-      throw new Error("Only pending payments can be completed");
-    }
-
-    if (payment.ticketRequest.status !== "PAYMENT_PENDING") {
-      throw new Error(
-        "Ticket request is not awaiting payment",
-      );
-    }
-
-    const existingTicket = await tx.ticket.findUnique({
-      where: {
-        ticketRequestId: payment.ticketRequestId,
-      },
-    });
-
-    if (existingTicket) {
-      throw new Error("Ticket already exists for this payment");
-    }
-
-    const ticketNumber = generateTicketNumber();
-
-    const updatedPayment = await tx.payment.update({
-      where: {
-        id: paymentId,
-      },
-      data: {
-        status: "SUCCESS",
-      },
-    });
-
-    await tx.ticketRequest.update({
-      where: {
-        id: payment.ticketRequestId,
-      },
-      data: {
-        status: "PAID",
-      },
-    });
-
-    const ticket = await tx.ticket.create({
-      data: {
-        ticketNumber,
-        userId: payment.userId,
-        eventId: payment.eventId,
-        ticketRequestId: payment.ticketRequestId,
-        status: "ACTIVE",
-      },
-      select: {
-        id: true,
-        ticketNumber: true,
-        status: true,
-        createdAt: true,
-        event: {
-          select: {
-            id: true,
-            title: true,
-            date: true,
-            startTime: true,
-            endTime: true,
-            venue: true,
-          },
-        },
-      },
-    });
-
-    return {
-      payment: {
-        id: updatedPayment.id,
-        amount: updatedPayment.amount,
-        status: updatedPayment.status,
-      },
-      ticketRequest: {
-        id: payment.ticketRequest.id,
-        status: "PAID",
-      },
-      ticket,
+  if (query.status) where.status = query.status;
+  if (query.eventId) where.eventId = query.eventId;
+  if (query.search) {
+    where.user = {
+      OR: [
+        { name: { contains: query.search, mode: "insensitive" } },
+        { email: { contains: query.search, mode: "insensitive" } },
+      ],
     };
+  }
+
+  const total = await prisma.payment.count({ where });
+  const payments = await prisma.payment.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    skip: (pagination.page - 1) * pagination.pageSize,
+    take: pagination.pageSize,
+    select: {
+      id: true,
+      amount: true,
+      status: true,
+      provider: true,
+      providerOrderId: true,
+      providerPaymentId: true,
+      createdAt: true,
+      updatedAt: true,
+      user: {
+        select: { id: true, name: true, email: true },
+      },
+      event: {
+        select: { id: true, title: true, date: true },
+      },
+      ticketRequest: { select: { id: true, status: true } },
+    },
   });
+
+  return paged(payments, total, pagination);
 }

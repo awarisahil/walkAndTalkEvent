@@ -1,293 +1,138 @@
-import { Request, Response } from "express";
+import type { Response } from "express";
+import type { AuthenticatedRequest } from "../middleware/auth.middleware";
 import {
   createTicketRequestSchema,
   rejectTicketRequestSchema,
 } from "../validators/ticketRequest.validator";
+import { adminRequestQuerySchema } from "../validators/query.validator";
 import {
   createTicketRequest,
   getTicketRequestsForAdmin,
+  getTicketRequestById,
   approveTicketRequest,
   rejectTicketRequest,
+  cancelTicketRequest,
   getMyTicketRequests,
-  getMyPaymentPendingRequests
+  getMyPaymentPendingRequests,
 } from "../services/ticketRequest.service";
-import { AuthenticatedRequest } from "../middleware/auth.middleware";
+import { asyncHandler } from "../utils/asyncHandler";
+import { ok, parsePagination, badRequest } from "../utils/response";
+import { unauthorized } from "../utils/AppError";
 
-export async function createTicketRequestController(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    // Make sure authentication middleware provided the user
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
-    }
+export const createTicketRequestController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
 
-    // Validate request body
-    const validation = createTicketRequestSchema.safeParse(
-      req.body,
-    );
-
+    const validation = createTicketRequestSchema.safeParse(req.body);
     if (!validation.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors: validation.error.flatten(),
-      });
+      throw badRequest("Invalid input", validation.error.flatten());
     }
 
-    // Create ticket request
     const ticketRequest = await createTicketRequest(
       req.user.userId,
       validation.data,
     );
 
-    return res.status(201).json({
-      success: true,
+    return ok(res, ticketRequest, {
       message: "Ticket request submitted successfully",
-      data: ticketRequest,
+      status: 201,
     });
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "Event not found") {
-        return res.status(404).json({
-          success: false,
-          message: error.message,
-        });
-      }
+  },
+);
 
-      if (
-        error.message ===
-        "Tickets can only be requested for published events"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: error.message,
-        });
-      }
+export const getTicketRequestByIdController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
 
-      if (
-        error.message ===
-        "You have already requested a ticket for this event"
-      ) {
-        return res.status(409).json({
-          success: false,
-          message: error.message,
-        });
-      }
-    }
-
-    console.error("Create ticket request error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to create ticket request",
-    });
-  }
-}
-export async function getTicketRequestsForAdminController(
-  _req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    const requests = await getTicketRequestsForAdmin();
-
-    return res.status(200).json({
-      success: true,
-      data: requests,
-    });
-  } catch (error) {
-    console.error(
-      "Get ticket requests for admin error:",
-      error,
+    const request = await getTicketRequestById(
+      req.user.userId,
+      req.user.role,
+      String(req.params.id),
     );
 
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch ticket requests",
-    });
-  }
-}
-export async function approveTicketRequestController(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    const ticketRequestId = String(req.params.id);
+    return ok(res, request);
+  },
+);
 
-    const ticketRequest =
-      await approveTicketRequest(ticketRequestId);
+export const getTicketRequestsForAdminController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const query = adminRequestQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      throw badRequest("Invalid query parameters", query.error.flatten());
+    }
 
-    return res.status(200).json({
-      success: true,
+    const requests = await getTicketRequestsForAdmin(
+      query.data,
+      parsePagination(req.query),
+    );
+
+    return ok(res, requests);
+  },
+);
+
+export const approveTicketRequestController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const ticketRequest = await approveTicketRequest(
+      String(req.params.id),
+    );
+
+    return ok(res, ticketRequest, {
       message: "Ticket request approved",
-      data: ticketRequest,
     });
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "Ticket request not found") {
-        return res.status(404).json({
-          success: false,
-          message: error.message,
-        });
-      }
+  },
+);
 
-      if (
-        error.message ===
-        "Only pending ticket requests can be approved"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: error.message,
-        });
-      }
-
-      if (error.message === "Event tickets are full") {
-        return res.status(409).json({
-          success: false,
-          message: error.message,
-        });
-      }
-    }
-
-    console.error(
-      "Approve ticket request error:",
-      error,
-    );
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to approve ticket request",
-    });
-  }
-}
-
-export async function rejectTicketRequestController(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    const ticketRequestId = String(req.params.id);
-
-    const validation = rejectTicketRequestSchema.safeParse(
-      req.body,
-    );
-
+export const rejectTicketRequestController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const validation = rejectTicketRequestSchema.safeParse(req.body);
     if (!validation.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors: validation.error.flatten(),
-      });
+      throw badRequest("Invalid input", validation.error.flatten());
     }
 
     const ticketRequest = await rejectTicketRequest(
-      ticketRequestId,
+      String(req.params.id),
       validation.data.rejectionReason,
     );
 
-    return res.status(200).json({
-      success: true,
+    return ok(res, ticketRequest, {
       message: "Ticket request rejected",
-      data: ticketRequest,
     });
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === "Ticket request not found") {
-        return res.status(404).json({
-          success: false,
-          message: error.message,
-        });
-      }
+  },
+);
 
-      if (
-        error.message ===
-        "Only pending ticket requests can be rejected"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: error.message,
-        });
-      }
-    }
+export const cancelTicketRequestController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
 
-    console.error(
-      "Reject ticket request error:",
-      error,
-    );
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to reject ticket request",
-    });
-  }
-}
-
-export async function getMyTicketRequestsController(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
-    }
-
-    const requests = await getMyTicketRequests(
+    const request = await cancelTicketRequest(
       req.user.userId,
+      String(req.params.id),
     );
 
-    return res.status(200).json({
-      success: true,
-      data: requests,
+    return ok(res, request, {
+      message: "Ticket request cancelled",
     });
-  } catch (error) {
-    console.error(
-      "Get my ticket requests error:",
-      error,
-    );
+  },
+);
 
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch ticket requests",
-    });
-  }
-}
+export const getMyTicketRequestsController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
 
-export async function getMyPaymentPendingRequestsController(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required",
-      });
-    }
+    const requests = await getMyTicketRequests(req.user.userId);
+
+    return ok(res, requests);
+  },
+);
+
+export const getMyPaymentPendingRequestsController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) throw unauthorized();
 
     const requests = await getMyPaymentPendingRequests(
       req.user.userId,
     );
 
-    return res.status(200).json({
-      success: true,
-      data: requests,
-    });
-  } catch (error) {
-    console.error(
-      "Get payment pending requests error:",
-      error,
-    );
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch payment pending requests",
-    });
-  }
-}
+    return ok(res, requests);
+  },
+);

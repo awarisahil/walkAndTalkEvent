@@ -1,45 +1,60 @@
+import { Prisma } from "../generated/prisma/client";
 import prisma from "../config/prisma";
-import { CreateTicketRequestInput } from "../validators/ticketRequest.validator";
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+} from "../utils/AppError";
+import type { PagedResult, Pagination } from "../utils/response";
+import { paged } from "../utils/response";
+import {
+  countOccupiedPlaces,
+  expireStaleReservations,
+  reservationCutoff,
+} from "./reservation.service";
+import type { CreateTicketRequestInput } from "../validators/ticketRequest.validator";
+
+const customerProfileSelect = {
+  id: true,
+  name: true,
+  email: true,
+  phone: true,
+  age: true,
+  instagramUsername: true,
+  instagramProfileUrl: true,
+} satisfies Prisma.UserSelect;
 
 export async function createTicketRequest(
   userId: string,
   input: CreateTicketRequestInput,
 ) {
-  // 1. Check whether the event exists
   const event = await prisma.event.findUnique({
-    where: {
-      id: input.eventId,
-    },
+    where: { id: input.eventId },
+    select: { id: true, status: true },
   });
 
-  if (!event) {
-    throw new Error("Event not found");
-  }
+  if (!event) throw notFound("Event not found");
 
-  // 2. Customer can request tickets only for published events
   if (event.status !== "PUBLISHED") {
-    throw new Error(
+    throw badRequest(
       "Tickets can only be requested for published events",
     );
   }
 
-  // 3. Check whether this customer already requested this event
   const existingRequest = await prisma.ticketRequest.findUnique({
     where: {
-      userId_eventId: {
-        userId,
-        eventId: input.eventId,
-      },
+      userId_eventId: { userId, eventId: input.eventId },
     },
+    select: { status: true },
   });
 
   if (existingRequest) {
-    throw new Error(
+    throw conflict(
       "You have already requested a ticket for this event",
     );
   }
 
-  // 4. Create the ticket request
   const ticketRequest = await prisma.ticketRequest.create({
     data: {
       userId,
@@ -66,12 +81,66 @@ export async function createTicketRequest(
   return ticketRequest;
 }
 
-export async function getTicketRequestsForAdmin() {
-  const requests = await prisma.ticketRequest.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
+export interface AdminRequestQuery {
+  search?: string;
+  eventId?: string;
+  status?:
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED"
+    | "PAYMENT_PENDING"
+    | "PAID"
+    | "CANCELLED"
+    | "EXPIRED";
+  dateFrom?: string;
+  dateTo?: string;
+}
 
+export async function getTicketRequestsForAdmin(
+  query: AdminRequestQuery,
+  pagination: Pagination,
+): Promise<PagedResult<unknown>> {
+  await expireStaleReservations();
+
+  const where: Prisma.TicketRequestWhereInput = {};
+
+  if (query.status) where.status = query.status;
+  if (query.eventId) where.eventId = query.eventId;
+
+  if (query.search) {
+    where.user = {
+      OR: [
+        { name: { contains: query.search, mode: "insensitive" } },
+        { email: { contains: query.search, mode: "insensitive" } },
+      ],
+    };
+  }
+
+  if (query.dateFrom || query.dateTo) {
+    where.createdAt = {};
+    if (query.dateFrom) {
+      const from = new Date(query.dateFrom);
+      if (Number.isNaN(from.getTime())) {
+        throw badRequest("Invalid dateFrom value");
+      }
+      where.createdAt.gte = from;
+    }
+    if (query.dateTo) {
+      const to = new Date(query.dateTo);
+      if (Number.isNaN(to.getTime())) {
+        throw badRequest("Invalid dateTo value");
+      }
+      where.createdAt.lte = to;
+    }
+  }
+
+  const total = await prisma.ticketRequest.count({ where });
+
+  const requests = await prisma.ticketRequest.findMany({
+    where,
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    skip: (pagination.page - 1) * pagination.pageSize,
+    take: pagination.pageSize,
     select: {
       id: true,
       status: true,
@@ -79,19 +148,44 @@ export async function getTicketRequestsForAdmin() {
       reviewedAt: true,
       createdAt: true,
       updatedAt: true,
-
-      user: {
+      user: { select: customerProfileSelect },
+      event: {
         select: {
           id: true,
-          name: true,
-          email: true,
-          phone: true,
-          age: true,
-          instagramUsername: true,
-          instagramProfileUrl: true,
+          title: true,
+          date: true,
+          venue: true,
+          ticketPrice: true,
+          capacity: true,
+          status: true,
         },
       },
+      payment: {
+        select: { id: true, status: true, amount: true },
+      },
+      ticket: { select: { id: true, ticketNumber: true, status: true } },
+    },
+  });
 
+  return paged(requests, total, pagination);
+}
+
+export async function getTicketRequestById(
+  requesterId: string,
+  requesterRole: "ADMIN" | "CUSTOMER",
+  ticketRequestId: string,
+) {
+  const request = await prisma.ticketRequest.findUnique({
+    where: { id: ticketRequestId },
+    select: {
+      id: true,
+      status: true,
+      rejectionReason: true,
+      reviewedAt: true,
+      createdAt: true,
+      updatedAt: true,
+      userId: true,
+      user: { select: customerProfileSelect },
       event: {
         select: {
           id: true,
@@ -107,52 +201,71 @@ export async function getTicketRequestsForAdmin() {
           status: true,
         },
       },
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          amount: true,
+          provider: true,
+          createdAt: true,
+        },
+      },
+      ticket: {
+        select: { id: true, ticketNumber: true, status: true },
+      },
     },
   });
 
-  return requests;
+  if (!request) throw notFound("Ticket request not found");
+
+  if (requesterRole !== "ADMIN" && request.userId !== requesterId) {
+    throw forbidden(
+      "You do not have permission to view this ticket request",
+    );
+  }
+
+  const { userId: _ownerId, ...safeRequest } = request;
+  return safeRequest;
 }
-export async function approveTicketRequest(
-  ticketRequestId: string,
-) {
-  return await prisma.$transaction(async (tx) => {
+
+/**
+ * Approving a request reserves one place while payment is pending.
+ * The Event row is locked (SELECT ... FOR UPDATE) so concurrent
+ * approvals serialize and the capacity check cannot race.
+ */
+export async function approveTicketRequest(ticketRequestId: string) {
+  return prisma.$transaction(async (tx) => {
     const request = await tx.ticketRequest.findUnique({
-      where: {
-        id: ticketRequestId,
-      },
-      include: {
-        event: true,
-        user: true,
-      },
+      where: { id: ticketRequestId },
+      include: { event: true },
     });
 
-    if (!request) {
-      throw new Error("Ticket request not found");
-    }
+    if (!request) throw notFound("Ticket request not found");
 
     if (request.status !== "PENDING") {
-      throw new Error(
-        "Only pending ticket requests can be approved",
+      throw conflict("Only pending ticket requests can be approved");
+    }
+
+    if (request.event.status !== "PUBLISHED") {
+      throw conflict(
+        "This event is no longer accepting ticket requests",
       );
     }
 
-    // Count tickets that have already been allocated.
-const reservedTickets = await tx.ticketRequest.count({
-  where: {
-    eventId: request.eventId,
-    status: {
-      in: ["PAYMENT_PENDING", "PAID"],
-    },
-  },
-});
+    await expireStaleReservations(tx, request.eventId);
 
-if (reservedTickets >= request.event.capacity) {
-  throw new Error("Event tickets are full");
-}
-    const updatedRequest = await tx.ticketRequest.update({
-      where: {
-        id: ticketRequestId,
-      },
+    await tx.$queryRaw<
+      Array<{ id: string }>
+    >`SELECT "id" FROM "Event" WHERE "id" = ${request.eventId} FOR UPDATE`;
+
+    const occupied = await countOccupiedPlaces(tx, request.eventId);
+
+    if (occupied >= request.event.capacity) {
+      throw conflict("Event tickets are full");
+    }
+
+    return tx.ticketRequest.update({
+      where: { id: ticketRequestId },
       data: {
         status: "PAYMENT_PENDING",
         reviewedAt: new Date(),
@@ -163,18 +276,7 @@ if (reservedTickets >= request.event.capacity) {
         rejectionReason: true,
         reviewedAt: true,
         createdAt: true,
-
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            age: true,
-            instagramUsername: true,
-            instagramProfileUrl: true,
-          },
-        },
-
+        user: { select: customerProfileSelect },
         event: {
           select: {
             id: true,
@@ -187,8 +289,6 @@ if (reservedTickets >= request.event.capacity) {
         },
       },
     });
-
-    return updatedRequest;
   });
 }
 
@@ -197,25 +297,18 @@ export async function rejectTicketRequest(
   rejectionReason: string,
 ) {
   const request = await prisma.ticketRequest.findUnique({
-    where: {
-      id: ticketRequestId,
-    },
+    where: { id: ticketRequestId },
+    select: { id: true, status: true },
   });
 
-  if (!request) {
-    throw new Error("Ticket request not found");
-  }
+  if (!request) throw notFound("Ticket request not found");
 
   if (request.status !== "PENDING") {
-    throw new Error(
-      "Only pending ticket requests can be rejected",
-    );
+    throw conflict("Only pending ticket requests can be rejected");
   }
 
-  const rejectedRequest = await prisma.ticketRequest.update({
-    where: {
-      id: ticketRequestId,
-    },
+  return prisma.ticketRequest.update({
+    where: { id: ticketRequestId },
     data: {
       status: "REJECTED",
       rejectionReason,
@@ -227,18 +320,7 @@ export async function rejectTicketRequest(
       rejectionReason: true,
       reviewedAt: true,
       createdAt: true,
-
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          age: true,
-          instagramUsername: true,
-          instagramProfileUrl: true,
-        },
-      },
-
+      user: { select: customerProfileSelect },
       event: {
         select: {
           id: true,
@@ -250,20 +332,76 @@ export async function rejectTicketRequest(
       },
     },
   });
+}
 
-  return rejectedRequest;
+/**
+ * A customer may cancel their own request while it is PENDING (before
+ * admin review), or while PAYMENT_PENDING as long as no payment attempt
+ * has been recorded yet (cancelling would orphan an in-flight payment).
+ */
+export async function cancelTicketRequest(
+  userId: string,
+  ticketRequestId: string,
+) {
+  return prisma.$transaction(async (tx) => {
+    const request = await tx.ticketRequest.findUnique({
+      where: { id: ticketRequestId },
+      include: { payment: { select: { id: true, status: true } } },
+    });
+
+    if (!request) throw notFound("Ticket request not found");
+
+    if (request.userId !== userId) {
+      throw forbidden(
+        "You do not have permission to cancel this ticket request",
+      );
+    }
+
+    if (request.status === "PENDING") {
+      // fine — no place is reserved yet
+    } else if (request.status === "PAYMENT_PENDING") {
+      if (request.payment) {
+        throw conflict(
+          "This request has a payment on record and can no longer be cancelled online. Please contact support.",
+        );
+      }
+    } else {
+      throw conflict(
+        `A request with status ${request.status
+          .toLowerCase()
+          .replace("_", " ")} cannot be cancelled`,
+      );
+    }
+
+    return tx.ticketRequest.update({
+      where: { id: ticketRequestId },
+      data: { status: "CANCELLED" },
+      select: {
+        id: true,
+        status: true,
+        rejectionReason: true,
+        createdAt: true,
+        updatedAt: true,
+        event: {
+          select: {
+            id: true,
+            title: true,
+            date: true,
+            venue: true,
+            ticketPrice: true,
+          },
+        },
+      },
+    });
+  });
 }
 
 export async function getMyTicketRequests(userId: string) {
-  const requests = await prisma.ticketRequest.findMany({
-    where: {
-      userId,
-    },
+  await expireStaleReservations();
 
-    orderBy: {
-      createdAt: "desc",
-    },
-
+  return prisma.ticketRequest.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
     select: {
       id: true,
       status: true,
@@ -271,7 +409,6 @@ export async function getMyTicketRequests(userId: string) {
       reviewedAt: true,
       createdAt: true,
       updatedAt: true,
-
       event: {
         select: {
           id: true,
@@ -287,30 +424,31 @@ export async function getMyTicketRequests(userId: string) {
           status: true,
         },
       },
+      payment: {
+        select: { id: true, status: true, amount: true },
+      },
+      ticket: { select: { id: true, ticketNumber: true, status: true } },
     },
   });
-
-  return requests;
 }
 
-export async function getMyPaymentPendingRequests(
-  userId: string,
-) {
-  const requests = await prisma.ticketRequest.findMany({
+export async function getMyPaymentPendingRequests(userId: string) {
+  await expireStaleReservations();
+
+  return prisma.ticketRequest.findMany({
     where: {
       userId,
       status: "PAYMENT_PENDING",
+      OR: [
+        { reviewedAt: { gte: reservationCutoff() } },
+        { reviewedAt: null },
+      ],
     },
-
-    orderBy: {
-      reviewedAt: "desc",
-    },
-
+    orderBy: { reviewedAt: "desc" },
     select: {
       id: true,
       status: true,
       reviewedAt: true,
-
       event: {
         select: {
           id: true,
@@ -322,8 +460,9 @@ export async function getMyPaymentPendingRequests(
           ticketPrice: true,
         },
       },
+      payment: {
+        select: { id: true, status: true, amount: true },
+      },
     },
   });
-
-  return requests;
 }

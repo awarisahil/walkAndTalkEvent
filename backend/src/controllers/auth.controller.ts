@@ -1,82 +1,46 @@
-import { Request, Response } from "express";
-import { registerSchema, loginSchema } from "../validators/auth.validator";
-import {
-  registerUser,
-  loginUser,
-} from "../services/auth.service";
-export async function login(req: Request, res: Response) {
-  try {
-    const result = loginSchema.safeParse(req.body);
+import type { Request, Response } from "express";
+import { loginSchema, registerSchema } from "../validators/auth.validator";
+import { loginUser, registerUser } from "../services/auth.service";
+import { asyncHandler } from "../utils/asyncHandler";
+import { ok } from "../utils/response";
+import { badRequest, unauthorized } from "../utils/AppError";
 
-    if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid input",
-        errors: result.error.flatten(),
-      });
-    }
-
-    const resultData = await loginUser(result.data);
-
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: resultData,
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-
-    if (
-      error instanceof Error &&
-      error.message === "Invalid email or password"
-    ) {
-      return res.status(401).json({
-        success: false,
-        message: error.message,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-}
-export async function register(req: Request, res: Response) {
-  try {
+export const register = asyncHandler(
+  async (req: Request, res: Response) => {
     const result = registerSchema.safeParse(req.body);
 
     if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid input",
-        errors: result.error.flatten(),
-      });
+      throw badRequest("Invalid input", result.error.flatten());
     }
 
     const user = await registerUser(result.data);
 
-    return res.status(201).json({
-      success: true,
+    return ok(res, user, {
       message: "Registration successful",
-      data: user,
+      status: 201,
     });
-  } catch (error) {
-    console.error("Registration error:", error);
+  },
+);
 
-    if (
-      error instanceof Error &&
-      error.message === "User with this email already exists"
-    ) {
-      return res.status(409).json({
-        success: false,
-        message: error.message,
-      });
+export const login = asyncHandler(
+  async (req: Request, res: Response) => {
+    const result = loginSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw badRequest("Invalid input", result.error.flatten());
     }
 
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-}
+    try {
+      const data = await loginUser(result.data);
+      return ok(res, data, { message: "Login successful" });
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "Invalid email or password"
+      ) {
+        throw unauthorized(error.message);
+      }
+      throw error;
+    }
+  },
+);
