@@ -59,6 +59,7 @@ model User {
   ticketRequests TicketRequest[]
   payments       Payment[]
   tickets        Ticket[]
+  checkedInTickets Ticket[] @relation("CheckedInTickets")
 
   @@index([email])
   @@index([role])
@@ -158,6 +159,10 @@ model Ticket {
   status TicketStatus @default(ACTIVE)
 
   qrCode String?
+
+  usedAt   DateTime?
+  usedById String?
+  usedBy   User?    @relation("CheckedInTickets", fields: [usedById], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
