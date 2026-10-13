@@ -1,4 +1,4 @@
-# Walk & Talk Events — Event Platform
+# Walk & Talk Event — Event Platform
 
 An approval-first event management and ticketing platform (Luma-style). An admin
 publishes events; customers request tickets; the admin reviews each request and
