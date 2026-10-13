@@ -20,26 +20,26 @@ export const updateProfileSchema = z.object({
     .trim()
     .min(10, "Phone number must be at least 10 characters")
     .max(15, "Phone number must not exceed 15 characters")
-    .nullable(),
+    .nullish(),
 
   age: z
     .number()
     .int()
     .min(18, "You must be at least 18 years old")
     .max(100, "Invalid age")
-    .nullable(),
+    .nullish(),
 
   instagramUsername: z
     .string()
     .trim()
     .max(100, "Instagram username is too long")
-    .nullable(),
+    .nullish(),
 
   instagramProfileUrl: z
     .string()
     .trim()
     .url("Invalid Instagram profile URL")
-    .nullable(),
+    .nullish(),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

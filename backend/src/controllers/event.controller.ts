@@ -19,7 +19,8 @@ import {
   updateEvent,
 } from "../services/event.service";
 import { asyncHandler } from "../utils/asyncHandler";
-import { ok, parsePagination, badRequest } from "../utils/response";
+import { ok, parsePagination } from "../utils/response";
+import { badRequest } from "../utils/AppError";
 
 export const getEventsController = asyncHandler(
   async (req: Request, res: Response) => {

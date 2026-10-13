@@ -9,9 +9,11 @@ import {
   cancelEventController,
   publishEventController,
   completeEventController,
+} from "../controllers/event.controller";
+import {
   getEventAttendeesController,
   exportEventAttendeesController,
-} from "../controllers/event.controller";
+} from "../controllers/ticket.controller";
 import { authenticate } from "../middleware/auth.middleware";
 import { authorize } from "../middleware/role.middleware";
 

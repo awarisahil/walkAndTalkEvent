@@ -19,7 +19,8 @@ import {
   razorpayEnabled,
 } from "../services/razorpay.service";
 import { asyncHandler } from "../utils/asyncHandler";
-import { ok, parsePagination, badRequest } from "../utils/response";
+import { ok, parsePagination } from "../utils/response";
+import { badRequest } from "../utils/AppError";
 import { unauthorized } from "../utils/AppError";
 
 export const getPaymentConfigController = asyncHandler(
