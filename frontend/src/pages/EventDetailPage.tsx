@@ -8,6 +8,7 @@ import ErrorState from "../components/ErrorState";
 import Spinner from "../components/Spinner";
 import { useAuth } from "../context/useAuth";
 import { useAsyncData } from "../hooks/useAsyncData";
+import { useMyRequestStatuses } from "../hooks/useMyRequestStatuses";
 import { formatDateTime, formatEventTime, formatINR } from "../utils/format";
 import "./EventDetailPage.css";
 
@@ -16,6 +17,7 @@ export default function EventDetailPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const query = useAsyncData(() => fetchEvent(id ?? ""), [id]);
+  const myRequests = useMyRequestStatuses();
 
   const [requesting, setRequesting] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
@@ -45,6 +47,8 @@ export default function EventDetailPage() {
 
   const price = Number(event.ticketPrice);
   const soldOut = event.available === 0;
+  const myRequest =
+    user?.role === "CUSTOMER" ? myRequests?.get(event.id) : undefined;
 
   async function handleRequest() {
     setRequesting(true);
@@ -114,9 +118,7 @@ export default function EventDetailPage() {
               {formatDateTime(event.date)} · {event.venue}
             </p>
 
-            {soldOut ? (
-              <Badge tone="neutral">Tickets full</Badge>
-            ) : authLoading ? (
+            {authLoading ? (
               <Spinner label="Checking session…" />
             ) : !user ? (
               <>
@@ -132,6 +134,55 @@ export default function EventDetailPage() {
               <p className="event-cta-note muted">
                 You are signed in as an organizer. Admins cannot request tickets.
               </p>
+            ) : myRequest?.status === "PAID" ? (
+              <div className="banner banner-success">
+                <span>
+                  You have a ticket for this event.{" "}
+                  {myRequest.ticket ? (
+                    <Link to={`/dashboard/tickets/${myRequest.ticket.id}`}>
+                      View your ticket
+                    </Link>
+                  ) : (
+                    <Link to="/dashboard/tickets">View your tickets</Link>
+                  )}
+                </span>
+              </div>
+            ) : myRequest?.status === "PAYMENT_PENDING" ? (
+              <div className="banner banner-info">
+                <span>
+                  Your request was approved — complete your payment to secure
+                  the spot.{" "}
+                  <Link to={`/dashboard/requests/${myRequest.id}/pay`}>
+                    Pay now
+                  </Link>
+                </span>
+              </div>
+            ) : myRequest?.status === "PENDING" ? (
+              <div className="banner banner-info">
+                <span>
+                  Your request is being reviewed.{" "}
+                  <Link to="/dashboard/requests">View your requests</Link>.
+                </span>
+              </div>
+            ) : myRequest?.status === "REJECTED" ? (
+              <div className="banner banner-error">
+                <span>
+                  Your request was declined.
+                  {myRequest.rejectionReason
+                    ? ` Reason: ${myRequest.rejectionReason}`
+                    : ""}
+                </span>
+              </div>
+            ) : myRequest?.status === "CANCELLED" ||
+              myRequest?.status === "EXPIRED" ? (
+              <div className="banner banner-neutral">
+                <span>
+                  Your previous request for this event was closed. Only one
+                  request per event is allowed — contact the organizer for help.
+                </span>
+              </div>
+            ) : soldOut ? (
+              <Badge tone="neutral">Tickets full</Badge>
             ) : alreadyRequested ? (
               <div className="banner banner-info">
                 <span>

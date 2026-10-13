@@ -32,8 +32,10 @@ export const updateProfileSchema = z.object({
   instagramUsername: z
     .string()
     .trim()
+    .min(2, "Instagram username is required")
     .max(100, "Instagram username is too long")
-    .nullish(),
+    .transform((v) => v.replace(/^@/, ""))
+    .optional(),
 
   instagramProfileUrl: z
     .string()

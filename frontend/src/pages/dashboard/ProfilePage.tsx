@@ -76,6 +76,8 @@ function ProfileForm({
     }
     if (form.instagramProfileUrl && !/^https?:\/\/\S+\.\S+/.test(form.instagramProfileUrl))
       next.instagramProfileUrl = "Enter a full URL starting with http:// or https://";
+    if (form.instagramUsername.trim().length < 2)
+      next.instagramUsername = "Instagram username is required.";
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -92,7 +94,7 @@ function ProfileForm({
     };
     payload.phone = form.phone.trim() ? form.phone.trim() : null;
     payload.age = form.age ? Number(form.age) : null;
-    payload.instagramUsername = form.instagramUsername.trim() || null;
+    payload.instagramUsername = form.instagramUsername.trim();
     payload.instagramProfileUrl = form.instagramProfileUrl.trim() || null;
 
     setSaving(true);
@@ -211,14 +213,19 @@ function ProfileForm({
 
           <div className="field">
             <label htmlFor="profile-instagram">
-              Instagram username <span className="muted">(optional)</span>
+              Instagram username <span className="field-required">*</span>
             </label>
             <input
               id="profile-instagram"
               type="text"
+              required
               value={form.instagramUsername}
+              aria-invalid={Boolean(errors.instagramUsername)}
               onChange={(event) => update("instagramUsername", event.target.value)}
             />
+            {errors.instagramUsername ? (
+              <span className="field-error" role="alert">{errors.instagramUsername}</span>
+            ) : null}
           </div>
 
           <div className="field">

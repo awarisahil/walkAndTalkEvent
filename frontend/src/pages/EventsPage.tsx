@@ -5,6 +5,7 @@ import ErrorState from "../components/ErrorState";
 import EventCard from "../components/EventCard";
 import Pagination from "../components/Pagination";
 import { toErrorMessage } from "../hooks/useAsyncData";
+import { useMyRequestStatuses } from "../hooks/useMyRequestStatuses";
 import type { Event, PagedResult } from "../types";
 import "./EventsPage.css";
 
@@ -33,6 +34,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const myRequests = useMyRequestStatuses();
 
   // Debounce search/filter changes by 300ms; all state updates inside the
   // timer callback happen asynchronously.
@@ -132,7 +134,11 @@ export default function EventsPage() {
         <>
           <div className="event-grid">
             {result.items.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard
+                key={event.id}
+                event={event}
+                myRequest={myRequests?.get(event.id)}
+              />
             ))}
           </div>
           <Pagination

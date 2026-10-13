@@ -1,15 +1,28 @@
 import { Link } from "react-router-dom";
-import type { Event } from "../types";
+import type { Event, TicketRequest } from "../types";
 import { formatEventTime, formatINR } from "../utils/format";
 import "./EventCard.css";
 
 interface EventCardProps {
   event: Event;
+  myRequest?: TicketRequest;
 }
 
-export default function EventCard({ event }: EventCardProps) {
+const MY_STATUS_BADGE: Partial<
+  Record<TicketRequest["status"], { label: string; tone: string }>
+> = {
+  PAID: { label: "Ticket secured", tone: "success" },
+  PAYMENT_PENDING: { label: "Awaiting payment", tone: "info" },
+  PENDING: { label: "Requested", tone: "warning" },
+  REJECTED: { label: "Declined", tone: "danger" },
+};
+
+export default function EventCard({ event, myRequest }: EventCardProps) {
   const price = Number(event.ticketPrice);
   const isAlmostFull = event.available > 0 && event.available < 10;
+  const myBadge = myRequest
+    ? MY_STATUS_BADGE[myRequest.status]
+    : undefined;
 
   return (
     <Link to={`/events/${event.id}`} className="event-card">
@@ -28,6 +41,12 @@ export default function EventCard({ event }: EventCardProps) {
           </svg>
         </div>
       )}
+
+      {myBadge ? (
+        <span className={`event-card-my-badge badge badge-${myBadge.tone}`}>
+          {myBadge.label}
+        </span>
+      ) : null}
 
       <div className="event-card-body">
         <p className="event-card-date">{formatEventTime(event.date, event.startTime, event.endTime)}</p>

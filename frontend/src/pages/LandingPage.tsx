@@ -4,12 +4,14 @@ import EventCard from "../components/EventCard";
 import ErrorState from "../components/ErrorState";
 import Spinner from "../components/Spinner";
 import { useAsyncData } from "../hooks/useAsyncData";
+import { useMyRequestStatuses } from "../hooks/useMyRequestStatuses";
 import "./LandingPage.css";
 
 export default function LandingPage() {
   const query = useAsyncData(() =>
     fetchEvents({ page: 1, pageSize: 6 }).then((result) => result.items),
   );
+  const myRequests = useMyRequestStatuses();
   const { status, reload } = query;
   const events = query.status === "ready" ? query.data : null;
 
@@ -55,7 +57,11 @@ export default function LandingPage() {
         ) : !events || events.length === 0 ? null : (
           <div className="event-grid">
             {events.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard
+                key={event.id}
+                event={event}
+                myRequest={myRequests?.get(event.id)}
+              />
             ))}
           </div>
         )}

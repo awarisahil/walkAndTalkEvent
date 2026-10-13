@@ -30,8 +30,9 @@ export const registerSchema = z.object({
   instagramUsername: z
     .string()
     .trim()
+    .min(2, "Instagram username is required")
     .max(100, "Instagram username is too long")
-    .optional(),
+    .transform((v) => v.replace(/^@/, "")),
 
   instagramProfileUrl: z
     .string()

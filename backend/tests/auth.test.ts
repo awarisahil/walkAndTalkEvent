@@ -12,19 +12,51 @@ describe("auth & user profile", () => {
       password: "Password123!",
       phone: "9876543210",
       age: 28,
+      instagramUsername: "auth.user",
     });
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.email).toBe(email);
-    expect(res.body.data.role).toBe("CUSTOMER");
-    expect(res.body.data.password).toBeUndefined();
+    expect(res.body.data.accessToken).toBeTruthy();
+    expect(res.body.data.user.email).toBe(email);
+    expect(res.body.data.user.role).toBe("CUSTOMER");
+    expect(res.body.data.user.password).toBeUndefined();
+  });
+
+  it("rejects registration without an Instagram username", async () => {
+    const app = await getApp();
+    const res = await request(app).post("/api/auth/register").send({
+      name: "No Instagram",
+      email: uniqueEmail("auth-noig"),
+      password: "Password123!",
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/invalid input/i);
+  });
+
+  it("strips a leading @ from the Instagram username", async () => {
+    const app = await getApp();
+    const res = await request(app).post("/api/auth/register").send({
+      name: "At Sign User",
+      email: uniqueEmail("auth-at"),
+      password: "Password123!",
+      instagramUsername: "@at.sign",
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.user.instagramUsername).toBe("at.sign");
   });
 
   it("rejects duplicate registration", async () => {
     const app = await getApp();
     const email = uniqueEmail("auth-dup");
-    const body = { name: "Dup User", email, password: "Password123!" };
+    const body = {
+      name: "Dup User",
+      email,
+      password: "Password123!",
+      instagramUsername: "dup.user",
+    };
     const first = await request(app).post("/api/auth/register").send(body);
     expect(first.status).toBe(201);
     const second = await request(app).post("/api/auth/register").send(body);
@@ -39,10 +71,11 @@ describe("auth & user profile", () => {
       email: uniqueEmail("auth-role"),
       password: "Password123!",
       role: "ADMIN",
+      instagramUsername: "sneaky.admin",
     });
 
     expect(res.status).toBe(201);
-    expect(res.body.data.role).toBe("CUSTOMER");
+    expect(res.body.data.user.role).toBe("CUSTOMER");
   });
 
   it("logs in with correct credentials and rejects a wrong password", async () => {

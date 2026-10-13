@@ -229,19 +229,19 @@ export default function AdminRequestsPage() {
                       </div>
                       <div className="muted" style={{ fontSize: "0.8rem" }}>
                         {request.user.age != null ? `Age ${request.user.age}` : "Age —"}
+                        {request.user.phone ? ` · ${request.user.phone}` : ""}
                         {" · "}
                         {request.user.instagramUsername ? (
-                          request.user.instagramProfileUrl ? (
-                            <a
-                              href={request.user.instagramProfileUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              @{request.user.instagramUsername}
-                            </a>
-                          ) : (
-                            <>@{request.user.instagramUsername}</>
-                          )
+                          <a
+                            href={
+                              request.user.instagramProfileUrl ??
+                              `https://instagram.com/${request.user.instagramUsername}`
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            @{request.user.instagramUsername}
+                          </a>
                         ) : (
                           "no Instagram"
                         )}

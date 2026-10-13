@@ -56,6 +56,8 @@ export default function RegisterPage() {
     }
     if (form.instagramProfileUrl && !/^https?:\/\/\S+\.\S+/.test(form.instagramProfileUrl))
       next.instagramProfileUrl = "Enter a full URL starting with http:// or https://";
+    if (form.instagramUsername.trim().length < 2)
+      next.instagramUsername = "Instagram username is required.";
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -72,8 +74,7 @@ export default function RegisterPage() {
     };
     if (form.phone.trim()) payload.phone = form.phone.trim();
     if (form.age) payload.age = Number(form.age);
-    if (form.instagramUsername.trim())
-      payload.instagramUsername = form.instagramUsername.trim();
+    payload.instagramUsername = form.instagramUsername.trim();
     if (form.instagramProfileUrl.trim())
       payload.instagramProfileUrl = form.instagramProfileUrl.trim();
 
@@ -189,14 +190,20 @@ export default function RegisterPage() {
 
           <div className="field">
             <label htmlFor="reg-instagram">
-              Instagram username <span className="muted">(optional)</span>
+              Instagram username <span className="field-required">*</span>
             </label>
             <input
               id="reg-instagram"
               type="text"
+              required
+              autoComplete="username"
               value={form.instagramUsername}
+              aria-invalid={Boolean(errors.instagramUsername)}
               onChange={(event) => update("instagramUsername", event.target.value)}
             />
+            {errors.instagramUsername ? (
+              <span className="field-error" role="alert">{errors.instagramUsername}</span>
+            ) : null}
           </div>
 
           <div className="field">

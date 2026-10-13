@@ -52,6 +52,7 @@ export async function registerAndLogin(prefix = "customer"): Promise<TestUser> {
     password,
     phone: "9876543210",
     age: 25,
+    instagramUsername: `ig_${Math.random().toString(36).slice(2, 10)}`,
   });
   if (register.status !== 201) {
     throw new Error(
