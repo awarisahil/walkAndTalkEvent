@@ -47,12 +47,15 @@
   column-gap: 22px;
 }
 
+/* Block-level (not inline-block) so break-inside: avoid is honored and the
+   card is never sliced across a column break — caption/chip stay visible. */
 .community-card {
-  display: inline-block;
+  display: block;
   width: 100%;
   margin-bottom: 22px;
   overflow: hidden;
   break-inside: avoid;
+  -webkit-column-break-inside: avoid;
   box-shadow: var(--shadow-sm);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
@@ -63,12 +66,18 @@
 }
 
 .community-card-media {
+  position: relative;
   overflow: hidden;
   background: var(--color-bg-muted);
 }
 
+.community-card.is-expandable .community-card-media {
+  cursor: zoom-in;
+}
+
 .community-media-img {
   width: 100%;
+  height: auto;
   display: block;
   transition: transform 0.25s ease;
 }
@@ -79,9 +88,32 @@
 
 .community-media-video {
   width: 100%;
+  height: auto;
   display: block;
-  aspect-ratio: 16 / 9;
   background: var(--walnut);
+}
+
+/* Hover affordance: hint that the media opens full-view */
+.community-card-expand {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(74, 47, 36, 0.68);
+  color: var(--cream);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.community-card.is-expandable:hover .community-card-expand,
+.community-card.is-expandable:focus-within .community-card-expand {
+  opacity: 1;
 }
 
 .community-media-instagram {

@@ -1,0 +1,117 @@
+.media-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(74, 47, 36, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: media-lightbox-fade 0.15s ease;
+}
+
+@keyframes media-lightbox-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.media-lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(247, 242, 232, 0.35);
+  border-radius: 999px;
+  background: rgba(74, 47, 36, 0.55);
+  color: var(--cream);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.media-lightbox-close:hover {
+  background: rgba(74, 47, 36, 0.85);
+}
+
+.media-lightbox-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 92vw;
+  max-height: 88vh;
+}
+
+.media-lightbox-img {
+  max-width: 92vw;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  background: var(--walnut);
+}
+
+/* Reels-style vertical container for video */
+.media-lightbox-body.is-video {
+  aspect-ratio: 9 / 16;
+  height: min(85vh, calc(90vw * 16 / 9));
+  max-width: 90vw;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  background: #2a1a13;
+  box-shadow: var(--shadow-lg);
+}
+
+.media-lightbox-video {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: #000;
+}
+
+.media-lightbox-body.is-video .media-lightbox-info {
+  flex-shrink: 0;
+}
+
+.media-lightbox-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 92vw;
+  text-align: center;
+}
+
+.media-lightbox-caption {
+  color: var(--cream);
+  font-size: 0.95rem;
+  white-space: pre-line;
+}
+
+/* Event chip keeps its beige look but is readable on the dark backdrop */
+.media-lightbox-info .community-event-chip {
+  background: var(--beige);
+  color: var(--walnut);
+}
+
+@media (max-width: 640px) {
+  .media-lightbox {
+    padding: 12px;
+  }
+
+  .media-lightbox-img {
+    max-width: 94vw;
+    max-height: 74vh;
+  }
+
+  .media-lightbox-body.is-video {
+    max-width: 94vw;
+    height: min(85vh, calc(94vw * 16 / 9));
+  }
+}

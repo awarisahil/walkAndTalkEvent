@@ -1,9 +1,10 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { fetchAdminEvents } from "../../api/events";
 import {
   createCommunityPost,
   deleteCommunityPost,
   fetchCommunityPosts,
+  uploadCommunityMedia,
 } from "../../api/community";
 import CommunityMedia from "../../components/CommunityMedia";
 import ConfirmDialog from "../../components/ConfirmDialog";
@@ -12,6 +13,7 @@ import ErrorState from "../../components/ErrorState";
 import Spinner from "../../components/Spinner";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import type { CommunityMediaType, CommunityPost } from "../../types";
+import { instagramShortcode } from "../../utils/instagram";
 import { formatDateTime } from "../../utils/format";
 import "./AdminPages.css";
 import "./AdminCommunityPage.css";
@@ -21,6 +23,8 @@ const MEDIA_TYPE_OPTIONS: Array<{ value: CommunityMediaType; label: string }> = 
   { value: "VIDEO", label: "Video" },
   { value: "INSTAGRAM", label: "Instagram post" },
 ];
+
+const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
 interface FormState {
   mediaType: CommunityMediaType;
@@ -39,7 +43,11 @@ export default function AdminCommunityPage() {
     caption: "",
     eventId: "",
   });
+  const [file, setFile] = useState<File | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const [useUrlInstead, setUseUrlInstead] = useState(false);
   const [urlError, setUrlError] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -50,33 +58,99 @@ export default function AdminCommunityPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  // Revoke the object URL when the preview changes or the page unmounts.
+  useEffect(() => {
+    return () => {
+      if (filePreviewUrl) URL.revokeObjectURL(filePreviewUrl);
+    };
+  }, [filePreviewUrl]);
+
+  function clearFile() {
+    setFile(null);
+    setFilePreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setFileError(null);
+  }
+
   function update<Field extends keyof FormState>(field: Field, value: FormState[Field]) {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (field === "mediaUrl") setUrlError(null);
     setApiError(null);
     setSuccess(null);
+    if (field === "mediaUrl") setUrlError(null);
+    if (field === "mediaType") {
+      // Media payloads don't carry across types.
+      clearFile();
+      setUseUrlInstead(false);
+      setUrlError(null);
+    }
+  }
+
+  function handleFileChange(selected: File | null) {
+    setFileError(null);
+    setApiError(null);
+    if (!selected) {
+      clearFile();
+      return;
+    }
+    if (selected.size > MAX_FILE_BYTES) {
+      clearFile();
+      setFileError("File is larger than 50 MB — choose a smaller one.");
+      return;
+    }
+    clearFile();
+    setFile(selected);
+    setFilePreviewUrl(URL.createObjectURL(selected));
+  }
+
+  function validateMedia(): { mediaUrl: string } | null {
+    if (form.mediaType === "INSTAGRAM") {
+      const url = form.mediaUrl.trim();
+      if (!url) {
+        setUrlError("Paste an Instagram post or reel link.");
+        return null;
+      }
+      if (!/^https?:\/\/(www\.)?instagram\.com\//.test(url) || !instagramShortcode(url)) {
+        setUrlError("Enter an instagram.com link like https://www.instagram.com/p/…");
+        return null;
+      }
+      return { mediaUrl: url };
+    }
+
+    if (file) return { mediaUrl: "" }; // uploaded during submit
+
+    const url = form.mediaUrl.trim();
+    if (!/^https?:\/\/\S+\.\S+/.test(url)) {
+      setUrlError("Upload a file or paste a full URL starting with http:// or https://");
+      return null;
+    }
+    return { mediaUrl: url };
   }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    const url = form.mediaUrl.trim();
-    if (!/^https?:\/\/\S+\.\S+/.test(url)) {
-      setUrlError("Enter a full URL starting with http:// or https://");
-      return;
-    }
-
-    setSubmitting(true);
     setApiError(null);
     setSuccess(null);
+    const validated = validateMedia();
+    if (!validated) return;
+
+    setSubmitting(true);
     try {
+      const mediaUrl = file
+        ? (await uploadCommunityMedia(file)).url
+        : validated.mediaUrl;
+
       const created = await createCommunityPost({
         mediaType: form.mediaType,
-        mediaUrl: url,
+        mediaUrl,
         ...(form.caption.trim() ? { caption: form.caption.trim() } : {}),
         ...(form.eventId ? { eventId: form.eventId } : {}),
       });
       setLocalPosts((prev) => [created, ...prev]);
       setForm({ mediaType: form.mediaType, mediaUrl: "", caption: "", eventId: "" });
+      clearFile();
+      setUseUrlInstead(false);
       setSuccess("Post added to the community feed.");
     } catch (err) {
       setApiError(err instanceof Error ? err.message : "Could not add the post.");
@@ -105,6 +179,9 @@ export default function AdminCommunityPage() {
     postsQuery.status === "ready"
       ? [...localPosts, ...postsQuery.data.filter((post) => !deletedIds.has(post.id))]
       : localPosts;
+
+  const isInstagram = form.mediaType === "INSTAGRAM";
+  const accept = form.mediaType === "PHOTO" ? "image/*" : "video/*";
 
   return (
     <div>
@@ -166,25 +243,106 @@ export default function AdminCommunityPage() {
               </div>
             </div>
 
-            <div className="field">
-              <label htmlFor="cp-url">
-                Media URL{" "}
-                <span className="muted">
-                  (direct image/video link, or an Instagram post/reel URL)
-                </span>
-              </label>
-              <input
-                id="cp-url"
-                type="url"
-                placeholder="https://…"
-                value={form.mediaUrl}
-                aria-invalid={Boolean(urlError)}
-                onChange={(event) => update("mediaUrl", event.target.value)}
-              />
-              {urlError ? (
-                <span className="field-error" role="alert">{urlError}</span>
-              ) : null}
-            </div>
+            {isInstagram ? (
+              <div className="field">
+                <label htmlFor="cp-url">Instagram post or reel link</label>
+                <input
+                  id="cp-url"
+                  type="url"
+                  placeholder="https://www.instagram.com/p/…"
+                  value={form.mediaUrl}
+                  aria-invalid={Boolean(urlError)}
+                  onChange={(event) => update("mediaUrl", event.target.value)}
+                />
+                <span className="field-hint">Only instagram.com post or reel links work here.</span>
+                {urlError ? (
+                  <span className="field-error" role="alert">{urlError}</span>
+                ) : null}
+              </div>
+            ) : (
+              <>
+                {!useUrlInstead ? (
+                  <div className="field">
+                    <label htmlFor="cp-file">
+                      {form.mediaType === "PHOTO" ? "Photo" : "Video"} file
+                    </label>
+                    <input
+                      id="cp-file"
+                      type="file"
+                      accept={accept}
+                      onChange={(event) => handleFileChange(event.target.files?.[0] ?? null)}
+                    />
+                    <span className="field-hint">
+                      {form.mediaType === "PHOTO"
+                        ? "JPG, PNG, WebP or GIF — up to 50 MB."
+                        : "MP4, WebM or MOV — up to 50 MB."}
+                    </span>
+                    {fileError ? (
+                      <span className="field-error" role="alert">{fileError}</span>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="admin-link-btn community-url-toggle"
+                      onClick={() => {
+                        clearFile();
+                        setUseUrlInstead(true);
+                      }}
+                    >
+                      …or paste a media URL instead
+                    </button>
+                  </div>
+                ) : (
+                  <div className="field">
+                    <label htmlFor="cp-url">
+                      {form.mediaType === "PHOTO" ? "Photo" : "Video"} URL
+                    </label>
+                    <input
+                      id="cp-url"
+                      type="url"
+                      placeholder="https://…"
+                      value={form.mediaUrl}
+                      aria-invalid={Boolean(urlError)}
+                      onChange={(event) => update("mediaUrl", event.target.value)}
+                    />
+                    {urlError ? (
+                      <span className="field-error" role="alert">{urlError}</span>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="admin-link-btn community-url-toggle"
+                      onClick={() => {
+                        setForm((prev) => ({ ...prev, mediaUrl: "" }));
+                        setUrlError(null);
+                        setUseUrlInstead(false);
+                      }}
+                    >
+                      …or upload a file from your computer
+                    </button>
+                  </div>
+                )}
+
+                {filePreviewUrl ? (
+                  <div className="community-file-preview">
+                    {form.mediaType === "PHOTO" ? (
+                      <img src={filePreviewUrl} alt="Selected file preview" />
+                    ) : (
+                      <video src={filePreviewUrl} controls muted preload="metadata" />
+                    )}
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => {
+                        const input = document.getElementById("cp-file") as HTMLInputElement | null;
+                        if (input) input.value = "";
+                        clearFile();
+                      }}
+                    >
+                      Remove file
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            )}
 
             <div className="field">
               <label htmlFor="cp-caption">
@@ -199,7 +357,11 @@ export default function AdminCommunityPage() {
             </div>
 
             <button type="submit" className="btn btn-primary" disabled={submitting}>
-              {submitting ? <Spinner size="sm" label="Adding…" /> : "Add post"}
+              {submitting ? (
+                <Spinner size="sm" label={file ? "Uploading…" : "Adding…"} />
+              ) : (
+                "Add post"
+              )}
             </button>
           </form>
         </div>

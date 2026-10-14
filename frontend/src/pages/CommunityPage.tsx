@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { fetchCommunityPosts } from "../api/community";
 import CommunityMedia from "../components/CommunityMedia";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
+import MediaLightbox from "../components/MediaLightbox";
 import { useAsyncData } from "../hooks/useAsyncData";
 import type { CommunityMediaType, CommunityPost } from "../types";
 import { formatDate } from "../utils/format";
@@ -17,11 +18,48 @@ const FILTER_CHIPS: Array<{ value: TypeFilter; label: string }> = [
   { value: "INSTAGRAM", label: "Instagram" },
 ];
 
-function CommunityCard({ post }: { post: CommunityPost }) {
+const EXPAND_ICON = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6" />
+  </svg>
+);
+
+function CommunityCard({
+  post,
+  onExpand,
+}: {
+  post: CommunityPost;
+  onExpand: (post: CommunityPost) => void;
+}) {
+  const expandable = post.mediaType !== "INSTAGRAM";
+
+  function openViewer() {
+    if (expandable) onExpand(post);
+  }
+
   return (
-    <article className="card community-card">
-      <div className="community-card-media">
+    <article className={`card community-card${expandable ? " is-expandable" : ""}`}>
+      <div
+        className="community-card-media"
+        role={expandable ? "button" : undefined}
+        tabIndex={expandable ? 0 : undefined}
+        aria-label={
+          expandable
+            ? post.mediaType === "PHOTO"
+              ? "View photo full screen"
+              : "Play video"
+            : undefined
+        }
+        onClick={openViewer}
+        onKeyDown={(event) => {
+          if (expandable && (event.key === "Enter" || event.key === " ")) {
+            event.preventDefault();
+            onExpand(post);
+          }
+        }}
+      >
         <CommunityMedia post={post} />
+        {expandable ? <span className="community-card-expand">{EXPAND_ICON}</span> : null}
       </div>
       {(post.caption || post.event) && (
         <div className="community-card-body">
@@ -55,6 +93,8 @@ function CommunitySkeleton() {
 
 export default function CommunityPage() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
+  const [viewerPost, setViewerPost] = useState<CommunityPost | null>(null);
+  const closeViewer = useCallback(() => setViewerPost(null), []);
   const query = useAsyncData(
     () => fetchCommunityPosts({ mediaType: typeFilter === "ALL" ? undefined : typeFilter }),
     [typeFilter],
@@ -114,10 +154,14 @@ export default function CommunityPage() {
       ) : (
         <div className="community-grid">
           {query.data.map((post) => (
-            <CommunityCard key={post.id} post={post} />
+            <CommunityCard key={post.id} post={post} onExpand={setViewerPost} />
           ))}
         </div>
       )}
+
+      {viewerPost && viewerPost.mediaType !== "INSTAGRAM" ? (
+        <MediaLightbox post={viewerPost} onClose={closeViewer} />
+      ) : null}
     </div>
   );
 }

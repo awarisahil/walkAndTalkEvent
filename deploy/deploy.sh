@@ -91,6 +91,7 @@ rsync -az --delete \
   --exclude 'backend/dist' \
   --exclude 'frontend/dist' \
   --exclude 'backend/tests' \
+  --exclude 'backend/uploads' \
   -e "$RSYNC_SSH" \
   "$REPO_ROOT/" "$SERVER:$REMOTE_DIR/"
 

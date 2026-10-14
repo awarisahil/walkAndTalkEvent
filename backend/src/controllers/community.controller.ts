@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { UPLOAD_PUBLIC_PREFIX } from "../config/upload";
 import {
   createCommunityPostSchema,
   communityQuerySchema,
@@ -44,6 +45,20 @@ export const createCommunityPostController = asyncHandler(
       message: "Community post added",
       status: 201,
     });
+  },
+);
+
+export const uploadCommunityMediaController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.file) {
+      throw badRequest("Choose an image or video file to upload");
+    }
+
+    return ok(
+      res,
+      { url: `${UPLOAD_PUBLIC_PREFIX}${req.file.filename}` },
+      { message: "File uploaded", status: 201 },
+    );
   },
 );
 

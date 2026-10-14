@@ -326,3 +326,8 @@ export interface CreateCommunityPostPayload {
   caption?: string;
   eventId?: string;
 }
+
+/** Response of POST /community/upload — a same-origin "/uploads/..." path. */
+export interface CommunityUploadResponse {
+  url: string;
+}

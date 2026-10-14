@@ -12,6 +12,7 @@ import ticketRoutes from "./routes/ticket.routes";
 import ticketRequestRoutes from "./routes/ticketRequest.routes";
 import communityRoutes from "./routes/community.routes";
 import { razorpayWebhookController } from "./controllers/webhook.controller";
+import { UPLOAD_ROOT_DIR } from "./config/upload";
 import {
   errorHandler,
   notFoundHandler,
@@ -101,6 +102,13 @@ app.use("/api/tickets", ticketRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/ticket-requests", ticketRequestRoutes);
 app.use("/api/community", communityRoutes);
+app.use(
+  "/uploads",
+  express.static(UPLOAD_ROOT_DIR, {
+    maxAge: "7d",
+    immutable: true,
+  }),
+);
 
 app.use("/api", notFoundHandler);
 

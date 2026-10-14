@@ -3,6 +3,7 @@ import { unwrap } from "./auth";
 import type {
   CommunityMediaType,
   CommunityPost,
+  CommunityUploadResponse,
   CreateCommunityPostPayload,
 } from "../types";
 
@@ -24,4 +25,17 @@ export async function createCommunityPost(
 export async function deleteCommunityPost(id: string): Promise<{ id: string }> {
   const res = await client.delete(`/community/${id}`);
   return unwrap<{ id: string }>(res);
+}
+
+/**
+ * Uploads a photo/video file. The browser sets the multipart Content-Type
+ * (with boundary) automatically — the client must NOT set one explicitly.
+ */
+export async function uploadCommunityMedia(
+  file: File,
+): Promise<CommunityUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await client.post("/community/upload", formData);
+  return unwrap<CommunityUploadResponse>(res);
 }

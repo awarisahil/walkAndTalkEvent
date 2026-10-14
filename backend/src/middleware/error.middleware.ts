@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
+import multer from "multer";
 import { AppError } from "../utils/AppError";
 
 export function notFoundHandler(
@@ -68,6 +69,18 @@ export function errorHandler(
         code: "CONFLICT",
       });
     }
+  }
+
+  if (err instanceof multer.MulterError) {
+    const message =
+      err.code === "LIMIT_FILE_SIZE"
+        ? "File is too large (maximum 50 MB)"
+        : `Upload failed (${err.code})`;
+    return res.status(400).json({
+      success: false,
+      message,
+      code: "UPLOAD_ERROR",
+    });
   }
 
   console.error("Unhandled error:", err);

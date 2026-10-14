@@ -110,14 +110,16 @@ npm run build
 echo "    [remote] restarting app…"
 mkdir -p "$APP_DIR/.run"
 # Kill whatever actually listens on our port (pid files can go stale).
-OLD_PID="$(ss -ltnp 2>/dev/null | grep ":$PORT " | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2)"
-[ -n "$OLD_PID" ] && kill "$OLD_PID" 2>/dev/null || true
+# The `|| true` inside the substitution is required: with pipefail+set -e,
+# grep finding no listener would otherwise abort the whole script.
+OLD_PID="$(ss -ltnp 2>/dev/null | grep ":$PORT " | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2 || true)"
+if [ -n "$OLD_PID" ]; then kill "$OLD_PID" 2>/dev/null || true; fi
 sleep 1
 cd "$APP_DIR/backend"
 NODE_ENV=production nohup node dist/server.js > "$APP_DIR/.run/app.log" 2>&1 &
 sleep 2
 # Record the REAL listener pid, not the backgrounded job pid.
-RUN_PID="$(ss -ltnp 2>/dev/null | grep ":$PORT " | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2)"
+RUN_PID="$(ss -ltnp 2>/dev/null | grep ":$PORT " | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2 || true)"
 echo "$RUN_PID" > "$APP_DIR/.run/app.pid"
 echo "$PORT" > "$APP_DIR/.run/app-port"
 
