@@ -1,5 +1,10 @@
 # Walk & Talk Event — Event Platform
 
+#Find site at this ip
+        ||
+        \/
+http://65.21.8.185:5050/
+
 An approval-first event management and ticketing platform (Luma-style). An admin
 publishes events; customers request tickets; the admin reviews each request and
 approves or rejects it; approved customers pay; a verified payment produces
