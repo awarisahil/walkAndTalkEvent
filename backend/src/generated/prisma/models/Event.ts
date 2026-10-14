@@ -287,6 +287,7 @@ export type EventWhereInput = {
   ticketRequests?: Prisma.TicketRequestListRelationFilter
   payments?: Prisma.PaymentListRelationFilter
   tickets?: Prisma.TicketListRelationFilter
+  communityPosts?: Prisma.CommunityPostListRelationFilter
 }
 
 export type EventOrderByWithRelationInput = {
@@ -306,6 +307,7 @@ export type EventOrderByWithRelationInput = {
   ticketRequests?: Prisma.TicketRequestOrderByRelationAggregateInput
   payments?: Prisma.PaymentOrderByRelationAggregateInput
   tickets?: Prisma.TicketOrderByRelationAggregateInput
+  communityPosts?: Prisma.CommunityPostOrderByRelationAggregateInput
 }
 
 export type EventWhereUniqueInput = Prisma.AtLeast<{
@@ -328,6 +330,7 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   ticketRequests?: Prisma.TicketRequestListRelationFilter
   payments?: Prisma.PaymentListRelationFilter
   tickets?: Prisma.TicketListRelationFilter
+  communityPosts?: Prisma.CommunityPostListRelationFilter
 }, "id">
 
 export type EventOrderByWithAggregationInput = {
@@ -387,6 +390,7 @@ export type EventCreateInput = {
   ticketRequests?: Prisma.TicketRequestCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateInput = {
@@ -406,6 +410,7 @@ export type EventUncheckedCreateInput = {
   ticketRequests?: Prisma.TicketRequestUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventUpdateInput = {
@@ -425,6 +430,7 @@ export type EventUpdateInput = {
   ticketRequests?: Prisma.TicketRequestUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  communityPosts?: Prisma.CommunityPostUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateInput = {
@@ -444,6 +450,7 @@ export type EventUncheckedUpdateInput = {
   ticketRequests?: Prisma.TicketRequestUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventCreateManyInput = {
@@ -492,6 +499,11 @@ export type EventUncheckedUpdateManyInput = {
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EventNullableScalarRelationFilter = {
+  is?: Prisma.EventWhereInput | null
+  isNot?: Prisma.EventWhereInput | null
 }
 
 export type EventCountOrderByAggregateInput = {
@@ -557,6 +569,22 @@ export type EventScalarRelationFilter = {
   isNot?: Prisma.EventWhereInput
 }
 
+export type EventCreateNestedOneWithoutCommunityPostsInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutCommunityPostsInput, Prisma.EventUncheckedCreateWithoutCommunityPostsInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutCommunityPostsInput
+  connect?: Prisma.EventWhereUniqueInput
+}
+
+export type EventUpdateOneWithoutCommunityPostsNestedInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutCommunityPostsInput, Prisma.EventUncheckedCreateWithoutCommunityPostsInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutCommunityPostsInput
+  upsert?: Prisma.EventUpsertWithoutCommunityPostsInput
+  disconnect?: Prisma.EventWhereInput | boolean
+  delete?: Prisma.EventWhereInput | boolean
+  connect?: Prisma.EventWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutCommunityPostsInput, Prisma.EventUpdateWithoutCommunityPostsInput>, Prisma.EventUncheckedUpdateWithoutCommunityPostsInput>
+}
+
 export type DecimalFieldUpdateOperationsInput = {
   set?: runtime.Decimal | runtime.DecimalJsLike | number | string
   increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -619,6 +647,98 @@ export type EventUpdateOneRequiredWithoutTicketsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutTicketsInput, Prisma.EventUpdateWithoutTicketsInput>, Prisma.EventUncheckedUpdateWithoutTicketsInput>
 }
 
+export type EventCreateWithoutCommunityPostsInput = {
+  id?: string
+  title: string
+  description?: string | null
+  image?: string | null
+  date: Date | string
+  startTime?: string | null
+  endTime?: string | null
+  venue: string
+  ticketPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  capacity: number
+  status?: $Enums.EventStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ticketRequests?: Prisma.TicketRequestCreateNestedManyWithoutEventInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
+  tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+}
+
+export type EventUncheckedCreateWithoutCommunityPostsInput = {
+  id?: string
+  title: string
+  description?: string | null
+  image?: string | null
+  date: Date | string
+  startTime?: string | null
+  endTime?: string | null
+  venue: string
+  ticketPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  capacity: number
+  status?: $Enums.EventStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ticketRequests?: Prisma.TicketRequestUncheckedCreateNestedManyWithoutEventInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
+  tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+}
+
+export type EventCreateOrConnectWithoutCommunityPostsInput = {
+  where: Prisma.EventWhereUniqueInput
+  create: Prisma.XOR<Prisma.EventCreateWithoutCommunityPostsInput, Prisma.EventUncheckedCreateWithoutCommunityPostsInput>
+}
+
+export type EventUpsertWithoutCommunityPostsInput = {
+  update: Prisma.XOR<Prisma.EventUpdateWithoutCommunityPostsInput, Prisma.EventUncheckedUpdateWithoutCommunityPostsInput>
+  create: Prisma.XOR<Prisma.EventCreateWithoutCommunityPostsInput, Prisma.EventUncheckedCreateWithoutCommunityPostsInput>
+  where?: Prisma.EventWhereInput
+}
+
+export type EventUpdateToOneWithWhereWithoutCommunityPostsInput = {
+  where?: Prisma.EventWhereInput
+  data: Prisma.XOR<Prisma.EventUpdateWithoutCommunityPostsInput, Prisma.EventUncheckedUpdateWithoutCommunityPostsInput>
+}
+
+export type EventUpdateWithoutCommunityPostsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ticketRequests?: Prisma.TicketRequestUpdateManyWithoutEventNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
+  tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+}
+
+export type EventUncheckedUpdateWithoutCommunityPostsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endTime?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venue?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ticketRequests?: Prisma.TicketRequestUncheckedUpdateManyWithoutEventNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
+  tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+}
+
 export type EventCreateWithoutTicketRequestsInput = {
   id?: string
   title: string
@@ -635,6 +755,7 @@ export type EventCreateWithoutTicketRequestsInput = {
   updatedAt?: Date | string
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateWithoutTicketRequestsInput = {
@@ -653,6 +774,7 @@ export type EventUncheckedCreateWithoutTicketRequestsInput = {
   updatedAt?: Date | string
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventCreateOrConnectWithoutTicketRequestsInput = {
@@ -687,6 +809,7 @@ export type EventUpdateWithoutTicketRequestsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  communityPosts?: Prisma.CommunityPostUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateWithoutTicketRequestsInput = {
@@ -705,6 +828,7 @@ export type EventUncheckedUpdateWithoutTicketRequestsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventCreateWithoutPaymentsInput = {
@@ -723,6 +847,7 @@ export type EventCreateWithoutPaymentsInput = {
   updatedAt?: Date | string
   ticketRequests?: Prisma.TicketRequestCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateWithoutPaymentsInput = {
@@ -741,6 +866,7 @@ export type EventUncheckedCreateWithoutPaymentsInput = {
   updatedAt?: Date | string
   ticketRequests?: Prisma.TicketRequestUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventCreateOrConnectWithoutPaymentsInput = {
@@ -775,6 +901,7 @@ export type EventUpdateWithoutPaymentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ticketRequests?: Prisma.TicketRequestUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  communityPosts?: Prisma.CommunityPostUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateWithoutPaymentsInput = {
@@ -793,6 +920,7 @@ export type EventUncheckedUpdateWithoutPaymentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ticketRequests?: Prisma.TicketRequestUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventCreateWithoutTicketsInput = {
@@ -811,6 +939,7 @@ export type EventCreateWithoutTicketsInput = {
   updatedAt?: Date | string
   ticketRequests?: Prisma.TicketRequestCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
+  communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateWithoutTicketsInput = {
@@ -829,6 +958,7 @@ export type EventUncheckedCreateWithoutTicketsInput = {
   updatedAt?: Date | string
   ticketRequests?: Prisma.TicketRequestUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
+  communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventCreateOrConnectWithoutTicketsInput = {
@@ -863,6 +993,7 @@ export type EventUpdateWithoutTicketsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ticketRequests?: Prisma.TicketRequestUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
+  communityPosts?: Prisma.CommunityPostUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateWithoutTicketsInput = {
@@ -881,6 +1012,7 @@ export type EventUncheckedUpdateWithoutTicketsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ticketRequests?: Prisma.TicketRequestUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
+  communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutEventNestedInput
 }
 
 
@@ -892,12 +1024,14 @@ export type EventCountOutputType = {
   ticketRequests: number
   payments: number
   tickets: number
+  communityPosts: number
 }
 
 export type EventCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ticketRequests?: boolean | EventCountOutputTypeCountTicketRequestsArgs
   payments?: boolean | EventCountOutputTypeCountPaymentsArgs
   tickets?: boolean | EventCountOutputTypeCountTicketsArgs
+  communityPosts?: boolean | EventCountOutputTypeCountCommunityPostsArgs
 }
 
 /**
@@ -931,6 +1065,13 @@ export type EventCountOutputTypeCountTicketsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.TicketWhereInput
 }
 
+/**
+ * EventCountOutputType without action
+ */
+export type EventCountOutputTypeCountCommunityPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CommunityPostWhereInput
+}
+
 
 export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -949,6 +1090,7 @@ export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   ticketRequests?: boolean | Prisma.Event$ticketRequestsArgs<ExtArgs>
   payments?: boolean | Prisma.Event$paymentsArgs<ExtArgs>
   tickets?: boolean | Prisma.Event$ticketsArgs<ExtArgs>
+  communityPosts?: boolean | Prisma.Event$communityPostsArgs<ExtArgs>
   _count?: boolean | Prisma.EventCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["event"]>
 
@@ -1005,6 +1147,7 @@ export type EventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   ticketRequests?: boolean | Prisma.Event$ticketRequestsArgs<ExtArgs>
   payments?: boolean | Prisma.Event$paymentsArgs<ExtArgs>
   tickets?: boolean | Prisma.Event$ticketsArgs<ExtArgs>
+  communityPosts?: boolean | Prisma.Event$communityPostsArgs<ExtArgs>
   _count?: boolean | Prisma.EventCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EventIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1016,6 +1159,7 @@ export type $EventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     ticketRequests: Prisma.$TicketRequestPayload<ExtArgs>[]
     payments: Prisma.$PaymentPayload<ExtArgs>[]
     tickets: Prisma.$TicketPayload<ExtArgs>[]
+    communityPosts: Prisma.$CommunityPostPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1428,6 +1572,7 @@ export interface Prisma__EventClient<T, Null = never, ExtArgs extends runtime.Ty
   ticketRequests<T extends Prisma.Event$ticketRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$ticketRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TicketRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   payments<T extends Prisma.Event$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tickets<T extends Prisma.Event$ticketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  communityPosts<T extends Prisma.Event$communityPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$communityPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommunityPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1932,6 +2077,30 @@ export type Event$ticketsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.TicketScalarFieldEnum | Prisma.TicketScalarFieldEnum[]
+}
+
+/**
+ * Event.communityPosts
+ */
+export type Event$communityPostsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CommunityPost
+   */
+  select?: Prisma.CommunityPostSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CommunityPost
+   */
+  omit?: Prisma.CommunityPostOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CommunityPostInclude<ExtArgs> | null
+  where?: Prisma.CommunityPostWhereInput
+  orderBy?: Prisma.CommunityPostOrderByWithRelationInput | Prisma.CommunityPostOrderByWithRelationInput[]
+  cursor?: Prisma.CommunityPostWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CommunityPostScalarFieldEnum | Prisma.CommunityPostScalarFieldEnum[]
 }
 
 /**

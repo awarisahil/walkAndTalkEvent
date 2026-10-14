@@ -51,6 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  CommunityPost: 'CommunityPost',
   User: 'User',
   Event: 'Event',
   TicketRequest: 'TicketRequest',
@@ -72,6 +73,20 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const CommunityPostScalarFieldEnum = {
+  id: 'id',
+  mediaType: 'mediaType',
+  mediaUrl: 'mediaUrl',
+  caption: 'caption',
+  eventId: 'eventId',
+  addedById: 'addedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommunityPostScalarFieldEnum = (typeof CommunityPostScalarFieldEnum)[keyof typeof CommunityPostScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {

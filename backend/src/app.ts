@@ -10,6 +10,7 @@ import eventRoutes from "./routes/event.routes";
 import paymentRoutes from "./routes/payment.routes";
 import ticketRoutes from "./routes/ticket.routes";
 import ticketRequestRoutes from "./routes/ticketRequest.routes";
+import communityRoutes from "./routes/community.routes";
 import { razorpayWebhookController } from "./controllers/webhook.controller";
 import {
   errorHandler,
@@ -23,8 +24,30 @@ const corsOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-app.use(helmet());
-
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        upgradeInsecureRequests: null,
+        // Razorpay Checkout loads its script + iframe and talks to its API.
+        scriptSrc: ["'self'", "https://checkout.razorpay.com"],
+        frameSrc: [
+          "'self'",
+          "https://checkout.razorpay.com",
+          "https://api.razorpay.com",
+          "https://www.instagram.com",
+          "https://instagram.com",
+        ],
+        connectSrc: ["'self'", "https://api.razorpay.com", "https://lumberjack.razorpay.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
+    },
+    strictTransportSecurity: false,
+    // COOP is ignored on plain-HTTP origins (and can break the Razorpay
+    // checkout redirect flow), so leave it off.
+    crossOriginOpenerPolicy: false,
+  }),
+);
 // The Razorpay webhook needs the raw, untouched request body for
 // signature verification — mount it BEFORE express.json().
 app.post(
@@ -77,8 +100,27 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/ticket-requests", ticketRequestRoutes);
+app.use("/api/community", communityRoutes);
 
 app.use("/api", notFoundHandler);
+
+// Optional: serve the built frontend from the same process (production).
+// SERVE_STATIC_DIR points at frontend/dist on the server.
+const staticDir = process.env.SERVE_STATIC_DIR;
+if (staticDir) {
+  app.use(
+    express.static(staticDir, {
+      maxAge: "1h",
+      setHeaders(res, path) {
+        if (path.endsWith(".html")) res.setHeader("Cache-Control", "no-cache");
+      },
+    }),
+  );
+  app.get(/^\/(?!api\/).*/, (_req, res) => {
+    res.sendFile(`${staticDir}/index.html`);
+  });
+}
+
 app.use(errorHandler);
 
 export { app };

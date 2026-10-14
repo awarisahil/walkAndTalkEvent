@@ -46,6 +46,9 @@ export default function Navbar() {
           <NavLink to="/events" className="navbar-link" onClick={closeMenu}>
             Browse events
           </NavLink>
+          <NavLink to="/community" className="navbar-link" onClick={closeMenu}>
+            Community
+          </NavLink>
 
           {user ? (
             <>

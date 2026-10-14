@@ -27,6 +27,8 @@ import AdminAttendeesPage from "../pages/admin/AdminAttendeesPage";
 import AdminRequestsPage from "../pages/admin/AdminRequestsPage";
 import AdminPaymentsPage from "../pages/admin/AdminPaymentsPage";
 import AdminCheckInPage from "../pages/admin/AdminCheckInPage";
+import AdminCommunityPage from "../pages/admin/AdminCommunityPage";
+import CommunityPage from "../pages/CommunityPage";
 
 export default function AppRouter() {
   return (
@@ -36,6 +38,7 @@ export default function AppRouter() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/events/:id" element={<EventDetailPage />} />
+          <Route path="/community" element={<CommunityPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="*" element={<NotFoundPage />} />
@@ -79,6 +82,7 @@ export default function AppRouter() {
           <Route path="requests" element={<AdminRequestsPage />} />
           <Route path="payments" element={<AdminPaymentsPage />} />
           <Route path="check-in" element={<AdminCheckInPage />} />
+          <Route path="community" element={<AdminCommunityPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -42,6 +42,32 @@ enum TicketStatus {
   CANCELLED
 }
 
+enum CommunityMediaType {
+  PHOTO
+  VIDEO
+  INSTAGRAM
+}
+
+model CommunityPost {
+  id String @id @default(uuid())
+
+  mediaType CommunityMediaType
+  mediaUrl  String
+  caption   String?
+
+  eventId String?
+  event   Event? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  addedById String
+  addedBy   User   @relation("CommunityPosts", fields: [addedById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([mediaType])
+}
+
 model User {
   id                  String   @id @default(uuid())
   name                String
@@ -60,6 +86,7 @@ model User {
   payments       Payment[]
   tickets        Ticket[]
   checkedInTickets Ticket[] @relation("CheckedInTickets")
+  communityPosts CommunityPost[] @relation("CommunityPosts")
 
   @@index([email])
   @@index([role])
@@ -88,6 +115,7 @@ model Event {
   ticketRequests TicketRequest[]
   payments       Payment[]
   tickets        Ticket[]
+  communityPosts CommunityPost[]
 
   @@index([date])
   @@index([status])

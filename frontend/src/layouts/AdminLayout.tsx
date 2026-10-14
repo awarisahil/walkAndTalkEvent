@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: "/admin/requests", label: "Ticket Requests" },
   { to: "/admin/payments", label: "Payments" },
   { to: "/admin/check-in", label: "Check-in" },
+  { to: "/admin/community", label: "Community" },
 ];
 
 export default function AdminLayout() {

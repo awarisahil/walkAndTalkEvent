@@ -57,3 +57,12 @@ export const TicketStatus = {
 } as const
 
 export type TicketStatus = (typeof TicketStatus)[keyof typeof TicketStatus]
+
+
+export const CommunityMediaType = {
+  PHOTO: 'PHOTO',
+  VIDEO: 'VIDEO',
+  INSTAGRAM: 'INSTAGRAM'
+} as const
+
+export type CommunityMediaType = (typeof CommunityMediaType)[keyof typeof CommunityMediaType]

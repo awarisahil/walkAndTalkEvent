@@ -8,6 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/CommunityPost.js'
 export type * from './models/User.js'
 export type * from './models/Event.js'
 export type * from './models/TicketRequest.js'

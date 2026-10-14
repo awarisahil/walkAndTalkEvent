@@ -301,3 +301,28 @@ export interface CheckInResult {
     email: string;
   };
 }
+
+/* ---------- community ---------- */
+
+export type CommunityMediaType = "PHOTO" | "VIDEO" | "INSTAGRAM";
+
+export interface CommunityPost {
+  id: string;
+  mediaType: CommunityMediaType;
+  mediaUrl: string;
+  caption: string | null;
+  createdAt: string;
+  event: {
+    id: string;
+    title: string;
+    date: string;
+    venue: string;
+  } | null;
+}
+
+export interface CreateCommunityPostPayload {
+  mediaType: CommunityMediaType;
+  mediaUrl: string;
+  caption?: string;
+  eventId?: string;
+}

@@ -397,6 +397,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
+  CommunityPost: 'CommunityPost',
   User: 'User',
   Event: 'Event',
   TicketRequest: 'TicketRequest',
@@ -417,10 +418,84 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "event" | "ticketRequest" | "payment" | "ticket"
+    modelProps: "communityPost" | "user" | "event" | "ticketRequest" | "payment" | "ticket"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
+    CommunityPost: {
+      payload: Prisma.$CommunityPostPayload<ExtArgs>
+      fields: Prisma.CommunityPostFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CommunityPostFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CommunityPostFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload>
+        }
+        findFirst: {
+          args: Prisma.CommunityPostFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CommunityPostFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload>
+        }
+        findMany: {
+          args: Prisma.CommunityPostFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload>[]
+        }
+        create: {
+          args: Prisma.CommunityPostCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload>
+        }
+        createMany: {
+          args: Prisma.CommunityPostCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CommunityPostCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload>[]
+        }
+        delete: {
+          args: Prisma.CommunityPostDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload>
+        }
+        update: {
+          args: Prisma.CommunityPostUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload>
+        }
+        deleteMany: {
+          args: Prisma.CommunityPostDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CommunityPostUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CommunityPostUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload>[]
+        }
+        upsert: {
+          args: Prisma.CommunityPostUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CommunityPostPayload>
+        }
+        aggregate: {
+          args: Prisma.CommunityPostAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCommunityPost>
+        }
+        groupBy: {
+          args: Prisma.CommunityPostGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CommunityPostGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CommunityPostCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CommunityPostCountAggregateOutputType> | number
+        }
+      }
+    }
     User: {
       payload: Prisma.$UserPayload<ExtArgs>
       fields: Prisma.UserFieldRefs
@@ -830,6 +905,20 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const CommunityPostScalarFieldEnum = {
+  id: 'id',
+  mediaType: 'mediaType',
+  mediaUrl: 'mediaUrl',
+  caption: 'caption',
+  eventId: 'eventId',
+  addedById: 'addedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommunityPostScalarFieldEnum = (typeof CommunityPostScalarFieldEnum)[keyof typeof CommunityPostScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -959,6 +1048,34 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
+ * Reference to a field of type 'CommunityMediaType'
+ */
+export type EnumCommunityMediaTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommunityMediaType'>
+    
+
+
+/**
+ * Reference to a field of type 'CommunityMediaType[]'
+ */
+export type ListEnumCommunityMediaTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CommunityMediaType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -983,20 +1100,6 @@ export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
  * Reference to a field of type 'UserRole[]'
  */
 export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole[]'>
-    
-
-
-/**
- * Reference to a field of type 'DateTime'
- */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
-    
-
-
-/**
- * Reference to a field of type 'DateTime[]'
- */
-export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
 
 
@@ -1234,6 +1337,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
  */
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
+  communityPost?: Prisma.CommunityPostOmit
   user?: Prisma.UserOmit
   event?: Prisma.EventOmit
   ticketRequest?: Prisma.TicketRequestOmit
