@@ -68,6 +68,18 @@ model CommunityPost {
   @@index([mediaType])
 }
 
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
 model User {
   id                  String   @id @default(uuid())
   name                String
@@ -87,6 +99,7 @@ model User {
   tickets        Ticket[]
   checkedInTickets Ticket[] @relation("CheckedInTickets")
   communityPosts CommunityPost[] @relation("CommunityPosts")
+  refreshTokens  RefreshToken[]
 
   @@index([email])
   @@index([role])

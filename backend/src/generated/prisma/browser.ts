@@ -23,6 +23,11 @@ export * from './enums.js';
  */
 export type CommunityPost = Prisma.CommunityPostModel
 /**
+ * Model RefreshToken
+ * 
+ */
+export type RefreshToken = Prisma.RefreshTokenModel
+/**
  * Model User
  * 
  */

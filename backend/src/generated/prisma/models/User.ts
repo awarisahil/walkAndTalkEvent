@@ -269,6 +269,7 @@ export type UserWhereInput = {
   tickets?: Prisma.TicketListRelationFilter
   checkedInTickets?: Prisma.TicketListRelationFilter
   communityPosts?: Prisma.CommunityPostListRelationFilter
+  refreshTokens?: Prisma.RefreshTokenListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -288,6 +289,7 @@ export type UserOrderByWithRelationInput = {
   tickets?: Prisma.TicketOrderByRelationAggregateInput
   checkedInTickets?: Prisma.TicketOrderByRelationAggregateInput
   communityPosts?: Prisma.CommunityPostOrderByRelationAggregateInput
+  refreshTokens?: Prisma.RefreshTokenOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -310,6 +312,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   tickets?: Prisma.TicketListRelationFilter
   checkedInTickets?: Prisma.TicketListRelationFilter
   communityPosts?: Prisma.CommunityPostListRelationFilter
+  refreshTokens?: Prisma.RefreshTokenListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -365,6 +368,7 @@ export type UserCreateInput = {
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketCreateNestedManyWithoutUsedByInput
   communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -384,6 +388,7 @@ export type UserUncheckedCreateInput = {
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUsedByInput
   communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -403,6 +408,7 @@ export type UserUpdateInput = {
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUpdateManyWithoutUsedByNestedInput
   communityPosts?: Prisma.CommunityPostUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -422,6 +428,7 @@ export type UserUncheckedUpdateInput = {
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUncheckedUpdateManyWithoutUsedByNestedInput
   communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -540,6 +547,20 @@ export type UserUpdateOneRequiredWithoutCommunityPostsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCommunityPostsInput, Prisma.UserUpdateWithoutCommunityPostsInput>, Prisma.UserUncheckedUpdateWithoutCommunityPostsInput>
 }
 
+export type UserCreateNestedOneWithoutRefreshTokensInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRefreshTokensInput, Prisma.UserUncheckedCreateWithoutRefreshTokensInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRefreshTokensInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutRefreshTokensNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRefreshTokensInput, Prisma.UserUncheckedCreateWithoutRefreshTokensInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRefreshTokensInput
+  upsert?: Prisma.UserUpsertWithoutRefreshTokensInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRefreshTokensInput, Prisma.UserUpdateWithoutRefreshTokensInput>, Prisma.UserUncheckedUpdateWithoutRefreshTokensInput>
+}
+
 export type NullableIntFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
@@ -626,6 +647,7 @@ export type UserCreateWithoutCommunityPostsInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketCreateNestedManyWithoutUsedByInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCommunityPostsInput = {
@@ -644,6 +666,7 @@ export type UserUncheckedCreateWithoutCommunityPostsInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUsedByInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCommunityPostsInput = {
@@ -678,6 +701,7 @@ export type UserUpdateWithoutCommunityPostsInput = {
   payments?: Prisma.PaymentUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUpdateManyWithoutUsedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCommunityPostsInput = {
@@ -696,6 +720,99 @@ export type UserUncheckedUpdateWithoutCommunityPostsInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUncheckedUpdateManyWithoutUsedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutRefreshTokensInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  age?: number | null
+  instagramUsername?: string | null
+  instagramProfileUrl?: string | null
+  password: string
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ticketRequests?: Prisma.TicketRequestCreateNestedManyWithoutUserInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutUserInput
+  tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
+  checkedInTickets?: Prisma.TicketCreateNestedManyWithoutUsedByInput
+  communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutAddedByInput
+}
+
+export type UserUncheckedCreateWithoutRefreshTokensInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  age?: number | null
+  instagramUsername?: string | null
+  instagramProfileUrl?: string | null
+  password: string
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ticketRequests?: Prisma.TicketRequestUncheckedCreateNestedManyWithoutUserInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutUserInput
+  tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
+  checkedInTickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUsedByInput
+  communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutAddedByInput
+}
+
+export type UserCreateOrConnectWithoutRefreshTokensInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutRefreshTokensInput, Prisma.UserUncheckedCreateWithoutRefreshTokensInput>
+}
+
+export type UserUpsertWithoutRefreshTokensInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutRefreshTokensInput, Prisma.UserUncheckedUpdateWithoutRefreshTokensInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutRefreshTokensInput, Prisma.UserUncheckedCreateWithoutRefreshTokensInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutRefreshTokensInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutRefreshTokensInput, Prisma.UserUncheckedUpdateWithoutRefreshTokensInput>
+}
+
+export type UserUpdateWithoutRefreshTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ticketRequests?: Prisma.TicketRequestUpdateManyWithoutUserNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutUserNestedInput
+  tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
+  checkedInTickets?: Prisma.TicketUpdateManyWithoutUsedByNestedInput
+  communityPosts?: Prisma.CommunityPostUpdateManyWithoutAddedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutRefreshTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ticketRequests?: Prisma.TicketRequestUncheckedUpdateManyWithoutUserNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutUserNestedInput
+  tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
+  checkedInTickets?: Prisma.TicketUncheckedUpdateManyWithoutUsedByNestedInput
+  communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutAddedByNestedInput
 }
 
 export type UserCreateWithoutTicketRequestsInput = {
@@ -714,6 +831,7 @@ export type UserCreateWithoutTicketRequestsInput = {
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketCreateNestedManyWithoutUsedByInput
   communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTicketRequestsInput = {
@@ -732,6 +850,7 @@ export type UserUncheckedCreateWithoutTicketRequestsInput = {
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUsedByInput
   communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTicketRequestsInput = {
@@ -766,6 +885,7 @@ export type UserUpdateWithoutTicketRequestsInput = {
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUpdateManyWithoutUsedByNestedInput
   communityPosts?: Prisma.CommunityPostUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTicketRequestsInput = {
@@ -784,6 +904,7 @@ export type UserUncheckedUpdateWithoutTicketRequestsInput = {
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUncheckedUpdateManyWithoutUsedByNestedInput
   communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPaymentsInput = {
@@ -802,6 +923,7 @@ export type UserCreateWithoutPaymentsInput = {
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketCreateNestedManyWithoutUsedByInput
   communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPaymentsInput = {
@@ -820,6 +942,7 @@ export type UserUncheckedCreateWithoutPaymentsInput = {
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUsedByInput
   communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPaymentsInput = {
@@ -854,6 +977,7 @@ export type UserUpdateWithoutPaymentsInput = {
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUpdateManyWithoutUsedByNestedInput
   communityPosts?: Prisma.CommunityPostUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPaymentsInput = {
@@ -872,6 +996,7 @@ export type UserUncheckedUpdateWithoutPaymentsInput = {
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUncheckedUpdateManyWithoutUsedByNestedInput
   communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCheckedInTicketsInput = {
@@ -890,6 +1015,7 @@ export type UserCreateWithoutCheckedInTicketsInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
   communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCheckedInTicketsInput = {
@@ -908,6 +1034,7 @@ export type UserUncheckedCreateWithoutCheckedInTicketsInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
   communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCheckedInTicketsInput = {
@@ -931,6 +1058,7 @@ export type UserCreateWithoutTicketsInput = {
   payments?: Prisma.PaymentCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketCreateNestedManyWithoutUsedByInput
   communityPosts?: Prisma.CommunityPostCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTicketsInput = {
@@ -949,6 +1077,7 @@ export type UserUncheckedCreateWithoutTicketsInput = {
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutUserInput
   checkedInTickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUsedByInput
   communityPosts?: Prisma.CommunityPostUncheckedCreateNestedManyWithoutAddedByInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTicketsInput = {
@@ -983,6 +1112,7 @@ export type UserUpdateWithoutCheckedInTicketsInput = {
   payments?: Prisma.PaymentUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
   communityPosts?: Prisma.CommunityPostUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCheckedInTicketsInput = {
@@ -1001,6 +1131,7 @@ export type UserUncheckedUpdateWithoutCheckedInTicketsInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
   communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutTicketsInput = {
@@ -1030,6 +1161,7 @@ export type UserUpdateWithoutTicketsInput = {
   payments?: Prisma.PaymentUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUpdateManyWithoutUsedByNestedInput
   communityPosts?: Prisma.CommunityPostUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTicketsInput = {
@@ -1048,6 +1180,7 @@ export type UserUncheckedUpdateWithoutTicketsInput = {
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutUserNestedInput
   checkedInTickets?: Prisma.TicketUncheckedUpdateManyWithoutUsedByNestedInput
   communityPosts?: Prisma.CommunityPostUncheckedUpdateManyWithoutAddedByNestedInput
+  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1061,6 +1194,7 @@ export type UserCountOutputType = {
   tickets: number
   checkedInTickets: number
   communityPosts: number
+  refreshTokens: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1069,6 +1203,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   tickets?: boolean | UserCountOutputTypeCountTicketsArgs
   checkedInTickets?: boolean | UserCountOutputTypeCountCheckedInTicketsArgs
   communityPosts?: boolean | UserCountOutputTypeCountCommunityPostsArgs
+  refreshTokens?: boolean | UserCountOutputTypeCountRefreshTokensArgs
 }
 
 /**
@@ -1116,6 +1251,13 @@ export type UserCountOutputTypeCountCommunityPostsArgs<ExtArgs extends runtime.T
   where?: Prisma.CommunityPostWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountRefreshTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RefreshTokenWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1134,6 +1276,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   tickets?: boolean | Prisma.User$ticketsArgs<ExtArgs>
   checkedInTickets?: boolean | Prisma.User$checkedInTicketsArgs<ExtArgs>
   communityPosts?: boolean | Prisma.User$communityPostsArgs<ExtArgs>
+  refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1186,6 +1329,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   tickets?: boolean | Prisma.User$ticketsArgs<ExtArgs>
   checkedInTickets?: boolean | Prisma.User$checkedInTicketsArgs<ExtArgs>
   communityPosts?: boolean | Prisma.User$communityPostsArgs<ExtArgs>
+  refreshTokens?: boolean | Prisma.User$refreshTokensArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1199,6 +1343,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     tickets: Prisma.$TicketPayload<ExtArgs>[]
     checkedInTickets: Prisma.$TicketPayload<ExtArgs>[]
     communityPosts: Prisma.$CommunityPostPayload<ExtArgs>[]
+    refreshTokens: Prisma.$RefreshTokenPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1611,6 +1756,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   tickets<T extends Prisma.User$ticketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   checkedInTickets<T extends Prisma.User$checkedInTicketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$checkedInTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   communityPosts<T extends Prisma.User$communityPostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$communityPostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommunityPostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  refreshTokens<T extends Prisma.User$refreshTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$refreshTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RefreshTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2161,6 +2307,30 @@ export type User$communityPostsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.CommunityPostScalarFieldEnum | Prisma.CommunityPostScalarFieldEnum[]
+}
+
+/**
+ * User.refreshTokens
+ */
+export type User$refreshTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RefreshToken
+   */
+  select?: Prisma.RefreshTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the RefreshToken
+   */
+  omit?: Prisma.RefreshTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RefreshTokenInclude<ExtArgs> | null
+  where?: Prisma.RefreshTokenWhereInput
+  orderBy?: Prisma.RefreshTokenOrderByWithRelationInput | Prisma.RefreshTokenOrderByWithRelationInput[]
+  cursor?: Prisma.RefreshTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RefreshTokenScalarFieldEnum | Prisma.RefreshTokenScalarFieldEnum[]
 }
 
 /**

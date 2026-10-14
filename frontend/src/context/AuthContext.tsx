@@ -5,11 +5,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { loginApi, registerApi } from "../api/auth";
+import { loginApi, logoutSession, registerApi } from "../api/auth";
 import {
-  AUTH_STORAGE_KEY,
   clearStoredAuth,
   readStoredAuth,
+  writeStoredAuth,
 } from "../api/client";
 import { fetchMe } from "../api/users";
 import { AuthContext } from "./authContext";
@@ -19,6 +19,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   // Only block rendering on bootstrap when a stored session must be validated.
+  // Pre-refresh-token entries fail readStoredAuth's validation and read as
+  // null here — the guards then send the user to log in once.
   const [loading, setLoading] = useState(() => readStoredAuth() !== null);
 
   useEffect(() => {
@@ -31,13 +33,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const freshUser = await fetchMe();
         if (cancelled) return;
-        setToken(stored.token);
+        setToken(stored.accessToken);
         setUserState(freshUser);
-        localStorage.setItem(
-          AUTH_STORAGE_KEY,
-          JSON.stringify({ token: stored.token, user: freshUser }),
-        );
+        writeStoredAuth({
+          accessToken: stored.accessToken,
+          refreshToken: stored.refreshToken,
+          user: freshUser,
+        });
       } catch {
+        // The 401 interceptor already attempted a transparent refresh and,
+        // when that failed, cleared storage + redirected. If we land here
+        // the session is truly dead — reset local state.
         if (!cancelled) {
           clearStoredAuth();
           setToken(null);
@@ -53,19 +59,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const persist = useCallback((nextToken: string, nextUser: User) => {
-    setToken(nextToken);
-    setUserState(nextUser);
-    localStorage.setItem(
-      AUTH_STORAGE_KEY,
-      JSON.stringify({ token: nextToken, user: nextUser }),
-    );
-  }, []);
+  const persist = useCallback(
+    (accessToken: string, refreshToken: string, nextUser: User) => {
+      setToken(accessToken);
+      setUserState(nextUser);
+      writeStoredAuth({ accessToken, refreshToken, user: nextUser });
+    },
+    [],
+  );
 
   const login = useCallback(
     async (email: string, password: string) => {
       const data = await loginApi(email, password);
-      persist(data.accessToken, data.user);
+      persist(data.accessToken, data.refreshToken, data.user);
       return data.user;
     },
     [persist],
@@ -74,13 +80,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (payload: RegisterPayload) => {
       const data = await registerApi(payload);
-      persist(data.accessToken, data.user);
+      persist(data.accessToken, data.refreshToken, data.user);
       return data.user;
     },
     [persist],
   );
 
   const logout = useCallback(() => {
+    const stored = readStoredAuth();
+    if (stored) {
+      // Revoke the refresh token server-side; ignore failures (expired or
+      // already-dead tokens are fine — the local session ends regardless).
+      logoutSession(stored.refreshToken).catch(() => undefined);
+    }
     clearStoredAuth();
     setToken(null);
     setUserState(null);
@@ -90,10 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserState(nextUser);
     const stored = readStoredAuth();
     if (stored) {
-      localStorage.setItem(
-        AUTH_STORAGE_KEY,
-        JSON.stringify({ token: stored.token, user: nextUser }),
-      );
+      writeStoredAuth({ ...stored, user: nextUser });
     }
   }, []);
 

@@ -64,6 +64,57 @@ describe("auth & user profile", () => {
     expect(second.body.message).toMatch(/already exists/i);
   });
 
+  it("issues a refresh token on login and rotates it on /auth/refresh", async () => {
+    const app = await getApp();
+    const { email, password } = await registerAndLogin("auth-refresh");
+
+    const login = await request(app)
+      .post("/api/auth/login")
+      .send({ email, password });
+    expect(login.status).toBe(200);
+    const refreshToken = login.body.data.refreshToken;
+    expect(refreshToken).toBeTruthy();
+
+    const refreshed = await request(app)
+      .post("/api/auth/refresh")
+      .send({ refreshToken });
+    expect(refreshed.status).toBe(200);
+    expect(refreshed.body.data.accessToken).toBeTruthy();
+    expect(refreshed.body.data.refreshToken).toBeTruthy();
+
+    // Rotated: the old refresh token must no longer work.
+    const replay = await request(app)
+      .post("/api/auth/refresh")
+      .send({ refreshToken });
+    expect(replay.status).toBe(401);
+
+    // The new pair works.
+    const second = await request(app)
+      .post("/api/auth/refresh")
+      .send({ refreshToken: refreshed.body.data.refreshToken });
+    expect(second.status).toBe(200);
+  });
+
+  it("logout revokes the refresh token", async () => {
+    const app = await getApp();
+    const { email, password } = await registerAndLogin("auth-logout");
+
+    const login = await request(app)
+      .post("/api/auth/login")
+      .send({ email, password });
+    const refreshToken = login.body.data.refreshToken;
+
+    const out = await request(app)
+      .post("/api/auth/logout")
+      .send({ refreshToken });
+    expect(out.status).toBe(200);
+
+    const after = await request(app)
+      .post("/api/auth/refresh")
+      .send({ refreshToken });
+    expect(after.status).toBe(401);
+  });
+
   it("ignores role=ADMIN in the register body (mass-assignment guard)", async () => {
     const app = await getApp();
     const res = await request(app).post("/api/auth/register").send({

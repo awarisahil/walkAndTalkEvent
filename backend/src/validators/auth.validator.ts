@@ -58,5 +58,9 @@ export const loginSchema = z.object({
     .max(128, "Password is too long"),
 });
 
+export const refreshSchema = z.object({
+  refreshToken: z.string().trim().min(10, "Refresh token is required"),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;

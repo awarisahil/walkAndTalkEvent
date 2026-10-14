@@ -35,9 +35,18 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       const user = await login(email, password);
-      navigate(user.role === "ADMIN" ? "/admin" : (from ?? "/dashboard"), {
-        replace: true,
-      });
+      // The 401 interceptor stashes the interrupted page here (full reloads
+      // can't carry React Router location.state).
+      let stashed: string | null = null;
+      try {
+        stashed = sessionStorage.getItem("event_platform_auth_redirect");
+        sessionStorage.removeItem("event_platform_auth_redirect");
+      } catch {
+        stashed = null;
+      }
+      const target =
+        user.role === "ADMIN" ? "/admin" : (from ?? stashed ?? "/dashboard");
+      navigate(target, { replace: true });
     } catch (err) {
       setApiError(err instanceof Error ? err.message : "Login failed.");
     } finally {

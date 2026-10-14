@@ -498,10 +498,6 @@ export type EnumTicketRequestStatusFieldUpdateOperationsInput = {
   set?: $Enums.TicketRequestStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type TicketRequestCreateNestedOneWithoutPaymentInput = {
   create?: Prisma.XOR<Prisma.TicketRequestCreateWithoutPaymentInput, Prisma.TicketRequestUncheckedCreateWithoutPaymentInput>
   connectOrCreate?: Prisma.TicketRequestCreateOrConnectWithoutPaymentInput
