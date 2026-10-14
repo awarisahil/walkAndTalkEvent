@@ -1,8 +1,7 @@
 # Walk & Talk Event — Event Platform
 
 #Find site at this ip
-        ||
-        \/
+        
 http://65.21.8.185:5050/
 
 An approval-first event management and ticketing platform (Luma-style). An admin
