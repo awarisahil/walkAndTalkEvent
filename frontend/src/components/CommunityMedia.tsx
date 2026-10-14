@@ -1,5 +1,37 @@
+import { useEffect } from "react";
 import type { CommunityPost } from "../types";
 import { instagramShortcode } from "../utils/instagram";
+
+declare global {
+  interface Window {
+    instgrm?: { Embeds: { process: () => void } };
+  }
+}
+
+let embedLoader: Promise<void> | null = null;
+
+/** Loads Instagram's embed.js once and (re)processes any blockquote embeds. */
+function processInstagramEmbeds(): void {
+  if (window.instgrm?.Embeds) {
+    window.instgrm.Embeds.process();
+    return;
+  }
+  embedLoader ??= new Promise<void>((resolve) => {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://www.instagram.com/embed.js";
+    script.onload = () => {
+      window.instgrm?.Embeds.process();
+      resolve();
+    };
+    script.onerror = () => {
+      embedLoader = null; // allow retry on next mount
+      resolve();
+    };
+    document.body.appendChild(script);
+  });
+  void embedLoader.then(() => window.instgrm?.Embeds.process());
+}
 
 interface CommunityMediaProps {
   post: CommunityPost;
@@ -9,6 +41,12 @@ interface CommunityMediaProps {
 
 /** Renders the media payload of a community post according to its type. */
 export default function CommunityMedia({ post, variant = "grid" }: CommunityMediaProps) {
+  const isGridInstagram = post.mediaType === "INSTAGRAM" && variant === "grid";
+
+  useEffect(() => {
+    if (isGridInstagram) processInstagramEmbeds();
+  }, [isGridInstagram]);
+
   if (post.mediaType === "PHOTO") {
     return (
       <img
@@ -33,16 +71,19 @@ export default function CommunityMedia({ post, variant = "grid" }: CommunityMedi
 
   // INSTAGRAM
   const shortcode = instagramShortcode(post.mediaUrl);
-  if (shortcode && variant === "grid") {
+  if (shortcode && isGridInstagram) {
+    // Official oEmbed-style markup: embed.js finds these blockquotes and
+    // replaces them with a fully-sized iframe (auto height — no cropping).
     return (
-      <iframe
-        className="community-media-instagram"
-        src={`https://www.instagram.com/p/${shortcode}/embed`}
-        title={post.caption ?? "Instagram post"}
-        loading="lazy"
-        allowTransparency
-        scrolling="no"
-      />
+      <blockquote
+        className="instagram-media community-media-instagram"
+        data-instgrm-permalink={post.mediaUrl}
+        data-instgrm-version="14"
+      >
+        <a href={post.mediaUrl} target="_blank" rel="noreferrer">
+          View this post on Instagram
+        </a>
+      </blockquote>
     );
   }
 

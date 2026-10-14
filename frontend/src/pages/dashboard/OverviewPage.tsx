@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchMyPaymentPendingRequests, fetchMyTicketRequests } from "../../api/requests";
 import { fetchMyTickets } from "../../api/tickets";
 import EmptyState from "../../components/EmptyState";
@@ -12,6 +12,7 @@ import "./DashboardPages.css";
 
 export default function OverviewPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const query = useAsyncData(async () => {
     const [requests, awaiting, tickets] = await Promise.all([
       fetchMyTicketRequests(),
@@ -61,6 +62,28 @@ export default function OverviewPage() {
           <span className="stat-card-label">Active tickets</span>
         </div>
       </div>
+
+      {awaitingCount > 0 ? (
+        <section className="dash-section">
+          <div className="card dash-card overview-pay-cta">
+            <div className="overview-pay-cta-text">
+              <h2 className="dash-section-title">
+                You have {awaitingCount} payment{awaitingCount === 1 ? "" : "s"} waiting
+              </h2>
+              <p className="muted">
+                Your spot is reserved — complete payment before the hold expires.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => navigate("/dashboard/awaiting-payment")}
+            >
+              Complete payment →
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       <section className="dash-section">
         <h2 className="dash-section-title">Recent requests</h2>

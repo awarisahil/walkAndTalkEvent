@@ -35,17 +35,10 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       const user = await login(email, password);
-      // The 401 interceptor stashes the interrupted page here (full reloads
-      // can't carry React Router location.state).
-      let stashed: string | null = null;
-      try {
-        stashed = sessionStorage.getItem("event_platform_auth_redirect");
-        sessionStorage.removeItem("event_platform_auth_redirect");
-      } catch {
-        stashed = null;
-      }
+      // Customers land on home; a guard-redirected login (state.from) returns
+      // them to the page they were sent away from.
       const target =
-        user.role === "ADMIN" ? "/admin" : (from ?? stashed ?? "/dashboard");
+        user.role === "ADMIN" ? "/admin" : (from ?? "/");
       navigate(target, { replace: true });
     } catch (err) {
       setApiError(err instanceof Error ? err.message : "Login failed.");

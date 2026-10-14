@@ -31,7 +31,12 @@ app.use(
       directives: {
         upgradeInsecureRequests: null,
         // Razorpay Checkout loads its script + iframe and talks to its API.
-        scriptSrc: ["'self'", "https://checkout.razorpay.com"],
+        scriptSrc: [
+          "'self'",
+          "https://checkout.razorpay.com",
+          "https://www.instagram.com",
+          "https://instagram.com",
+        ],
         frameSrc: [
           "'self'",
           "https://checkout.razorpay.com",

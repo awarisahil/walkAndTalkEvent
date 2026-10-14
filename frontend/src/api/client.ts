@@ -122,14 +122,6 @@ function refreshSessionOnce(): Promise<string | null> {
 function forceLoginRedirect(): void {
   const path = window.location.pathname;
   if (path.startsWith("/login") || path.startsWith("/register")) return;
-  try {
-    sessionStorage.setItem(
-      "event_platform_auth_redirect",
-      path + window.location.search,
-    );
-  } catch {
-    // sessionStorage unavailable — redirect without a return target.
-  }
   window.location.assign("/login");
 }
 

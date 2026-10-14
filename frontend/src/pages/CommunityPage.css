@@ -116,12 +116,33 @@
   opacity: 1;
 }
 
+/* Instagram embeds are injected by embed.js as an auto-height iframe —
+   no fixed height here or the post gets cropped. The blockquote below is
+   the pre-script fallback (and what shows if the script is blocked). */
 .community-media-instagram {
-  display: block;
+  margin: 0;
   width: 100%;
-  aspect-ratio: 400 / 505;
-  border: 0;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
   background: var(--color-surface);
+  border-left: none;
+}
+
+.community-media-instagram a {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* After embed.js processes the blockquote it wraps it in a span + iframe;
+   make sure the injected iframe is never clipped by the card. */
+.community-media-instagram iframe {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  border: 0;
 }
 
 .community-media-instagram-card {

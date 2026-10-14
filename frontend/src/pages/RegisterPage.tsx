@@ -81,7 +81,7 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       const user = await register(payload);
-      navigate(user.role === "ADMIN" ? "/admin" : "/dashboard", { replace: true });
+      navigate(user.role === "ADMIN" ? "/admin" : "/", { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.status === 500) {
         setApiError(
