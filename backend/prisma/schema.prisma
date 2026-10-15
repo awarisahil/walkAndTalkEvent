@@ -80,6 +80,19 @@ model RefreshToken {
   @@index([userId])
 }
 
+model PasswordResetOtp {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
+
 model User {
   id                  String   @id @default(uuid())
   name                String
@@ -100,6 +113,7 @@ model User {
   checkedInTickets Ticket[] @relation("CheckedInTickets")
   communityPosts CommunityPost[] @relation("CommunityPosts")
   refreshTokens  RefreshToken[]
+  passwordResetOtps PasswordResetOtp[]
 
   @@index([email])
   @@index([role])

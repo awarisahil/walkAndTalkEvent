@@ -6,6 +6,14 @@ import {
   refreshSession,
   registerUser,
 } from "../services/auth.service";
+import {
+  requestPasswordReset,
+  resetPasswordWithOtp,
+} from "../services/passwordReset.service";
+import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "../validators/auth.validator";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ok } from "../utils/response";
 import { badRequest } from "../utils/AppError";
@@ -62,5 +70,33 @@ export const logout = asyncHandler(
     }
 
     return ok(res, { loggedOut: true }, { message: "Logged out" });
+  },
+);
+
+export const forgotPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const result = forgotPasswordSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw badRequest("Invalid input", result.error.flatten());
+    }
+
+    const data = await requestPasswordReset(result.data.email);
+
+    return ok(res, data);
+  },
+);
+
+export const resetPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const result = resetPasswordSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw badRequest("Invalid input", result.error.flatten());
+    }
+
+    const data = await resetPasswordWithOtp(result.data);
+
+    return ok(res, data);
   },
 );

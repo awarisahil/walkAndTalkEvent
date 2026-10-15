@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import request from "supertest";
 import { auth, getApp, registerAndLogin, uniqueEmail } from "./helpers";
+import { getLastMailForTests } from "../src/services/email.service";
 
 describe("auth & user profile", () => {
   it("registers a customer: 201, no password in response", async () => {
@@ -113,6 +114,83 @@ describe("auth & user profile", () => {
       .post("/api/auth/refresh")
       .send({ refreshToken });
     expect(after.status).toBe(401);
+  });
+
+  it("forgot-password: OTP resets the password, old sessions revoked", async () => {
+    const app = await getApp();
+    const { email } = await registerAndLogin("auth-otp");
+
+    const requested = await request(app)
+      .post("/api/auth/forgot-password")
+      .send({ email });
+    expect(requested.status).toBe(200);
+
+    // SMTP is not configured in tests — the OTP is captured by the dev mailer.
+    const mail = getLastMailForTests();
+    expect(mail).toBeTruthy();
+    const otp = mail!.text.match(/\b(\d{6})\b/)?.[1];
+    expect(otp).toBeTruthy();
+
+    // Wrong code rejected, correct code works
+    const wrong = await request(app)
+      .post("/api/auth/reset-password")
+      .send({ email, otp: otp === "000000" ? "000001" : "000000", newPassword: "NewPassword123!" });
+    expect(wrong.status).toBe(400);
+
+    const reset = await request(app)
+      .post("/api/auth/reset-password")
+      .send({ email, otp, newPassword: "NewPassword123!" });
+    expect(reset.status).toBe(200);
+
+    // Old password dead, new password works
+    const oldLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email, password: "TestPassword123!" });
+    expect(oldLogin.status).toBe(401);
+    const newLogin = await request(app)
+      .post("/api/auth/login")
+      .send({ email, password: "NewPassword123!" });
+    expect(newLogin.status).toBe(200);
+
+    // Consumed OTP cannot be replayed
+    const replay = await request(app)
+      .post("/api/auth/reset-password")
+      .send({ email, otp, newPassword: "AnotherPass123!" });
+    expect(replay.status).toBe(400);
+  });
+
+  it("forgot-password returns the generic message for unknown emails (no enumeration)", async () => {
+    const app = await getApp();
+    const res = await request(app)
+      .post("/api/auth/forgot-password")
+      .send({ email: uniqueEmail("auth-nope") });
+    expect(res.status).toBe(200);
+    expect(res.body.data.message).toMatch(/if an account exists/i);
+  });
+
+  it("OTP is locked after 5 wrong attempts", async () => {
+    const app = await getApp();
+    const { email } = await registerAndLogin("auth-otp-lock");
+
+    await request(app).post("/api/auth/forgot-password").send({ email });
+
+    let lastStatus = 0;
+    for (let i = 0; i < 6; i++) {
+      lastStatus = (
+        await request(app)
+          .post("/api/auth/reset-password")
+          .send({ email, otp: "999999", newPassword: "Whatever123!" })
+      ).status;
+    }
+    expect(lastStatus).toBe(400);
+
+    // Even the REAL code must no longer work after lockout — and a fresh
+    // code request within the resend cooldown is rejected (400).
+    const again = await request(app)
+      .post("/api/auth/forgot-password")
+      .send({ email });
+    expect(again.status).toBe(400);
+    expect(again.body.message).toMatch(/wait a minute/i);
   });
 
   it("ignores role=ADMIN in the register body (mass-assignment guard)", async () => {

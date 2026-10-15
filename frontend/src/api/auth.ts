@@ -30,6 +30,22 @@ export async function refreshSession(refreshToken: string): Promise<AuthResponse
   return unwrap<AuthResponse>(res);
 }
 
+export async function requestPasswordReset(
+  email: string,
+): Promise<{ message: string }> {
+  const res = await client.post("/auth/forgot-password", { email });
+  return unwrap<{ message: string }>(res);
+}
+
+export async function resetPasswordWithOtp(payload: {
+  email: string;
+  otp: string;
+  newPassword: string;
+}): Promise<{ message: string }> {
+  const res = await client.post("/auth/reset-password", payload);
+  return unwrap<{ message: string }>(res);
+}
+
 /** Revokes a refresh token. Idempotent — safe with an already-dead token. */
 export async function logoutSession(refreshToken: string): Promise<void> {
   await client.post("/auth/logout", { refreshToken });

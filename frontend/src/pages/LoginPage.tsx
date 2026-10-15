@@ -88,6 +88,9 @@ export default function LoginPage() {
             {errors.password ? (
               <span className="field-error" role="alert">{errors.password}</span>
             ) : null}
+            <Link to="/forgot-password" className="auth-forgot-link">
+              Forgot password?
+            </Link>
           </div>
 
           <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>

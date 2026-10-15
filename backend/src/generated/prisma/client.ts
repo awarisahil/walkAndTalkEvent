@@ -50,6 +50,11 @@ export type CommunityPost = Prisma.CommunityPostModel
  */
 export type RefreshToken = Prisma.RefreshTokenModel
 /**
+ * Model PasswordResetOtp
+ * 
+ */
+export type PasswordResetOtp = Prisma.PasswordResetOtpModel
+/**
  * Model User
  * 
  */

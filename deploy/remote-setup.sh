@@ -60,6 +60,11 @@ if [ -f backend/.env ]; then
   EXISTING_DBPW="$(printf '%s\n' "$EXISTING" | grep -o 'walkandtalk:[^@]*@localhost' | cut -d: -f2 || true)"
   RAZORPAY_ID="$(printf '%s\n' "$EXISTING" | grep '^RAZORPAY_KEY_ID=' | cut -d= -f2- || true)"
   RAZORPAY_SECRET="$(printf '%s\n' "$EXISTING" | grep '^RAZORPAY_KEY_SECRET=' | cut -d= -f2- || true)"
+  SMTP_HOST_REUSE="$(printf '%s\n' "$EXISTING" | grep '^SMTP_HOST=' | cut -d= -f2- || true)"
+  SMTP_PORT_REUSE="$(printf '%s\n' "$EXISTING" | grep '^SMTP_PORT=' | cut -d= -f2- || true)"
+  SMTP_USER_REUSE="$(printf '%s\n' "$EXISTING" | grep '^SMTP_USER=' | cut -d= -f2- || true)"
+  SMTP_PASS_REUSE="$(printf '%s\n' "$EXISTING" | grep '^SMTP_PASS=' | cut -d= -f2- || true)"
+  SMTP_FROM_REUSE="$(printf '%s\n' "$EXISTING" | grep '^SMTP_FROM=' | cut -d= -f2- || true)"
   [ -n "$EXISTING_ADMIN" ] && ADMIN_PW="$EXISTING_ADMIN"
   [ -n "$EXISTING_JWT" ] && JWT_SECRET="$EXISTING_JWT"
   [ -n "$EXISTING_DBPW" ] && DB_PW="$EXISTING_DBPW"
@@ -83,6 +88,11 @@ ADMIN_PASSWORD=$ADMIN_PW
 SEED_DEMO_DATA=false
 RAZORPAY_KEY_ID=$RAZORPAY_ID
 RAZORPAY_KEY_SECRET=$RAZORPAY_SECRET
+SMTP_HOST=$SMTP_HOST_REUSE
+SMTP_PORT=$SMTP_PORT_REUSE
+SMTP_USER=$SMTP_USER_REUSE
+SMTP_PASS=$SMTP_PASS_REUSE
+SMTP_FROM=$SMTP_FROM_REUSE
 EOF
 cat > frontend/.env <<EOF
 VITE_API_URL=http://$IP:$PORT/api
