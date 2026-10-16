@@ -8,11 +8,17 @@ if (!JWT_ACCESS_SECRET) {
 
 const JWT_SECRET: string = JWT_ACCESS_SECRET;
 
-const rawExpiry = process.env.JWT_ACCESS_EXPIRES_IN ?? "15m";
-const expiresIn: number | `${number}${"s" | "m" | "h" | "d"}` =
-  /^\d+$/.test(rawExpiry)
-    ? Number(rawExpiry)
-    : (rawExpiry as `${number}${"s" | "m" | "h" | "d"}`);
+/**
+ * Accepts seconds ("900") or a timespan ("15m", "12h", "7d").
+ * Empty or malformed values fall back to 15 minutes so a half-configured
+ * .env can never break authentication at runtime.
+ */
+const rawExpiry = (process.env.JWT_ACCESS_EXPIRES_IN ?? "").trim();
+const expiresIn: number | string = /^\d+$/.test(rawExpiry)
+  ? Number(rawExpiry)
+  : /^\d+\s*[smhd]$/.test(rawExpiry)
+    ? rawExpiry.replace(/\s+/g, "")
+    : "15m";
 
 export interface AccessTokenPayload {
   userId: string;
@@ -20,5 +26,7 @@ export interface AccessTokenPayload {
 }
 
 export function generateAccessToken(payload: AccessTokenPayload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn });
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn: expiresIn as jwt.SignOptions["expiresIn"],
+  });
 }

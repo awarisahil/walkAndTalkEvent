@@ -168,6 +168,49 @@ describe("auth & user profile", () => {
     expect(res.body.data.message).toMatch(/if an account exists/i);
   });
 
+  it("passwordless email-code login issues a full session", async () => {
+    const app = await getApp();
+    const { email } = await registerAndLogin("auth-elogin");
+
+    const requested = await request(app)
+      .post("/api/auth/email-code")
+      .send({ email });
+    expect(requested.status).toBe(200);
+
+    const mail = getLastMailForTests();
+    const otp = mail!.text.match(/\b(\d{6})\b/)?.[1];
+    expect(otp).toBeTruthy();
+
+    const loggedIn = await request(app)
+      .post("/api/auth/email-login")
+      .send({ email, otp });
+    expect(loggedIn.status).toBe(200);
+    expect(loggedIn.body.data.accessToken).toBeTruthy();
+    expect(loggedIn.body.data.refreshToken).toBeTruthy();
+    expect(loggedIn.body.data.user.email).toBe(email);
+
+    // Session actually works
+    const me = await request(app)
+      .get("/api/users/me")
+      .set("Authorization", `Bearer ${loggedIn.body.data.accessToken}`);
+    expect(me.status).toBe(200);
+
+    // Code is single-use
+    const replay = await request(app)
+      .post("/api/auth/email-login")
+      .send({ email, otp });
+    expect(replay.status).toBe(400);
+  });
+
+  it("email-code login returns the generic message for unknown emails", async () => {
+    const app = await getApp();
+    const res = await request(app)
+      .post("/api/auth/email-code")
+      .send({ email: uniqueEmail("auth-nouser") });
+    expect(res.status).toBe(200);
+    expect(res.body.data.message).toMatch(/if an account exists/i);
+  });
+
   it("OTP is locked after 5 wrong attempts", async () => {
     const app = await getApp();
     const { email } = await registerAndLogin("auth-otp-lock");

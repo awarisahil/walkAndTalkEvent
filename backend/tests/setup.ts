@@ -40,6 +40,13 @@ delete process.env.RAZORPAY_KEY_ID;
 delete process.env.RAZORPAY_KEY_SECRET;
 delete process.env.RAZORPAY_WEBHOOK_SECRET;
 
+// Never send real email from tests — even when the dev .env has SMTP
+// configured. email.service falls back to its in-memory capture, which
+// the OTP tests read via getLastMailForTests().
+delete process.env.SMTP_HOST;
+delete process.env.SMTP_USER;
+delete process.env.SMTP_PASS;
+
 beforeAll(async () => {
   // Make sure the test database schema is fully migrated (no-op when
   // already up to date). Env override keeps the dev DB untouched.

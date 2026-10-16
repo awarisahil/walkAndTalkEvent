@@ -10,6 +10,7 @@ import eventRoutes from "./routes/event.routes";
 import paymentRoutes from "./routes/payment.routes";
 import ticketRoutes from "./routes/ticket.routes";
 import ticketRequestRoutes from "./routes/ticketRequest.routes";
+import invitesRoutes from "./routes/invites.routes";
 import communityRoutes from "./routes/community.routes";
 import { razorpayWebhookController } from "./controllers/webhook.controller";
 import { UPLOAD_ROOT_DIR } from "./config/upload";
@@ -106,6 +107,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/ticket-requests", ticketRequestRoutes);
+app.use("/api/invites", invitesRoutes);
 app.use("/api/community", communityRoutes);
 app.use(
   "/uploads",

@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { loginApi, logoutSession, registerApi } from "../api/auth";
+import { loginApi, logoutSession, registerApi, emailLogin } from "../api/auth";
 import {
   clearStoredAuth,
   readStoredAuth,
@@ -77,6 +77,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [persist],
   );
 
+  const loginWithCode = useCallback(
+    async (email: string, otp: string) => {
+      const data = await emailLogin(email, otp);
+      persist(data.accessToken, data.refreshToken, data.user);
+      return data.user;
+    },
+    [persist],
+  );
+
   const register = useCallback(
     async (payload: RegisterPayload) => {
       const data = await registerApi(payload);
@@ -107,8 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, token, loading, login, register, logout, setUser }),
-    [user, token, loading, login, register, logout, setUser],
+    () => ({ user, token, loading, login, loginWithCode, register, logout, setUser }),
+    [user, token, loading, login, loginWithCode, register, logout, setUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

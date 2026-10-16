@@ -65,6 +65,11 @@ export type User = Prisma.UserModel
  */
 export type Event = Prisma.EventModel
 /**
+ * Model ApprovalInvite
+ * 
+ */
+export type ApprovalInvite = Prisma.ApprovalInviteModel
+/**
  * Model TicketRequest
  * 
  */

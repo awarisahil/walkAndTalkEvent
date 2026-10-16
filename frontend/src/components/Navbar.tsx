@@ -65,16 +65,7 @@ export default function Navbar() {
                 Log out
               </button>
             </>
-          ) : (
-            <>
-              <NavLink to="/login" className="navbar-link" onClick={closeMenu}>
-                Log in
-              </NavLink>
-              <Link to="/register" className="btn btn-primary btn-sm" onClick={closeMenu}>
-                Create account
-              </Link>
-            </>
-          )}
+          ) : null}
         </nav>
       </div>
     </header>

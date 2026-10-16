@@ -1,4 +1,6 @@
 import { Prisma } from "../generated/prisma/client";
+import crypto from "node:crypto";
+import bcrypt from "bcryptjs";
 import prisma from "../config/prisma";
 import {
   badRequest,
@@ -14,6 +16,19 @@ import {
   reservationCutoff,
 } from "./reservation.service";
 import type { CreateTicketRequestInput } from "../validators/ticketRequest.validator";
+import type { GuestJoinInput } from "../validators/guestJoin.validator";
+import {
+  createInviteForRequest,
+  ensureInviteForRequest,
+} from "./invite.service";
+import { sendApprovalEmail } from "./email.service";
+
+export function publicAppUrl(): string {
+  return (
+    (process.env.PUBLIC_APP_URL ?? "").replace(/\/+$/, "") ||
+    "http://localhost:5173"
+  );
+}
 
 const customerProfileSelect = {
   id: true,
@@ -23,6 +38,7 @@ const customerProfileSelect = {
   age: true,
   instagramUsername: true,
   instagramProfileUrl: true,
+  linkedinProfileUrl: true,
 } satisfies Prisma.UserSelect;
 
 export async function createTicketRequest(
@@ -79,6 +95,89 @@ export async function createTicketRequest(
   });
 
   return ticketRequest;
+}
+
+/**
+ * Luma-style guest join: no signup, no login. The visitor's profile is
+ * captured in the form; we silently create an account with a random
+ * password on first use (claimable later via forgot-password), or refresh
+ * the profile of an existing account, then file the ticket request.
+ */
+export async function requestToJoinAsGuest(input: GuestJoinInput) {
+  const event = await prisma.event.findUnique({
+    where: { id: input.eventId },
+    select: { id: true, status: true, title: true },
+  });
+
+  if (!event) throw notFound("Event not found");
+
+  if (event.status !== "PUBLISHED") {
+    throw badRequest("Tickets can only be requested for published events");
+  }
+
+  const profile = {
+    name: input.name,
+    phone: input.phone,
+    age: input.age,
+    instagramUsername: input.instagramUsername,
+    instagramProfileUrl: input.instagramProfileUrl
+      ? input.instagramProfileUrl
+      : (`https://instagram.com/${input.instagramUsername}` as const),
+    linkedinProfileUrl: input.linkedinProfileUrl ?? null,
+  };
+
+  const user = await prisma.user.upsert({
+    where: { email: input.email },
+    update: profile,
+    create: {
+      ...profile,
+      email: input.email,
+      // Random password — the account is claimable later via the
+      // forgot-password flow if the customer ever wants to log in.
+      password: await bcrypt.hash(crypto.randomBytes(24).toString("base64url"), 12),
+      role: "CUSTOMER",
+    },
+    select: { id: true },
+  });
+
+  const existingRequest = await prisma.ticketRequest.findUnique({
+    where: { userId_eventId: { userId: user.id, eventId: input.eventId } },
+    select: { id: true },
+  });
+
+  if (existingRequest) {
+    // Same person, same event. Keep the ORIGINAL browser's token valid —
+    // we only store hashes, so an existing invite cannot be re-shared with
+    // a new device. The response tells the frontend "already requested".
+    const { freshToken } = await ensureInviteForRequest(existingRequest.id);
+    return {
+      request: { id: existingRequest.id, status: "EXISTS" as const },
+      eventTitle: event.title,
+      inviteToken: freshToken,
+      alreadyExists: true,
+    };
+  }
+
+  const ticketRequest = await prisma.ticketRequest.create({
+    data: { userId: user.id, eventId: input.eventId, status: "PENDING" },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      event: { select: { id: true, title: true, date: true, venue: true } },
+    },
+  });
+
+  // The requesting browser holds this token in localStorage — it's how the
+  // event page recognizes "this machine" when the approval comes through.
+  const inviteToken = await createInviteForRequest(ticketRequest.id);
+
+  return {
+    request: ticketRequest,
+    eventTitle: event.title,
+    inviteToken,
+    alreadyExists: false,
+  };
 }
 
 export interface AdminRequestQuery {
@@ -290,6 +389,30 @@ export async function approveTicketRequest(ticketRequestId: string) {
       },
     });
   });
+}
+
+export async function approveAndNotify(ticketRequestId: string) {
+  const request = await approveTicketRequest(ticketRequestId);
+
+  // Do not rotate an existing invite — the requesting browser already
+  // holds its token. Create one only if somehow missing.
+  const { freshToken } = await ensureInviteForRequest(request.id);
+  const baseUrl = publicAppUrl();
+
+  // Fire-and-forget: SMTP latency must not delay the admin's action.
+  void sendApprovalEmail(
+    request.user.email,
+    request.user.name,
+    request.event.title,
+    `${baseUrl}/events/${request.event.id}`,
+    freshToken && process.env.NODE_ENV !== "production"
+      ? { devPayLink: `${baseUrl}/pay/${freshToken}` }
+      : undefined,
+  ).catch((error) =>
+    console.error("Failed to send approval email:", error),
+  );
+
+  return request;
 }
 
 export async function rejectTicketRequest(

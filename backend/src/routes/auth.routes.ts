@@ -6,6 +6,8 @@ import {
   refresh,
   register,
   resetPassword,
+  emailCode,
+  emailLogin,
 } from "../controllers/auth.controller";
 import {
   authRateLimiter,
@@ -20,5 +22,7 @@ router.post("/refresh", refresh);
 router.post("/logout", logout);
 router.post("/forgot-password", passwordResetRateLimiter, forgotPassword);
 router.post("/reset-password", passwordResetRateLimiter, resetPassword);
+router.post("/email-code", passwordResetRateLimiter, emailCode);
+router.post("/email-login", passwordResetRateLimiter, emailLogin);
 
 export default router;

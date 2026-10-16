@@ -100,3 +100,146 @@
     height: 220px;
   }
 }
+
+/* ---------- Request to Join modal ---------- */
+
+.join-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(74, 47, 36, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.join-modal {
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+.join-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.join-modal-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.join-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.join-modal-close:hover {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+}
+
+.join-modal-sub {
+  margin: 2px 0 16px;
+  font-size: 0.9rem;
+}
+
+.join-modal-success {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+/* ---------- same-browser status view (invite token present) ---------- */
+
+.join-status {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.join-status-checking {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.join-status-detach {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.join-status-detach:hover {
+  color: var(--color-text);
+}
+
+.join-amount-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg-subtle);
+}
+
+.join-amount {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.join-ticket {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.join-ticket-number {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.join-ticket-qr {
+  align-self: flex-start;
+}
+
+.join-ticket-canvas {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: #fff;
+}
+
+.join-ticket-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}

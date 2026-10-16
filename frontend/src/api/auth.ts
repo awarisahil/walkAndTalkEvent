@@ -52,6 +52,21 @@ export async function logoutSession(refreshToken: string): Promise<void> {
 }
 
 /**
+ * Emails a 6-digit login code. The response is deliberately generic —
+ * unknown addresses return the same message as known ones.
+ */
+export async function requestEmailCode(email: string): Promise<{ message: string }> {
+  const res = await client.post("/auth/email-code", { email });
+  return unwrap<{ message: string }>(res);
+}
+
+/** Exchanges a login code for a full session (same shape as password login). */
+export async function emailLogin(email: string, otp: string): Promise<AuthResponse> {
+  const res = await client.post("/auth/email-login", { email, otp });
+  return unwrap<AuthResponse>(res);
+}
+
+/**
  * Current backends return {accessToken, refreshToken, user} from register.
  * Older builds returned only the user record — for those, log in to obtain
  * the tokens.

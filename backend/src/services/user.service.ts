@@ -62,6 +62,9 @@ export async function updateUserProfile(
       ...(input.instagramProfileUrl !== undefined && {
         instagramProfileUrl: input.instagramProfileUrl,
       }),
+      ...(input.linkedinProfileUrl !== undefined && {
+        linkedinProfileUrl: input.linkedinProfileUrl,
+      }),
     },
     select: publicUserSelect,
   });

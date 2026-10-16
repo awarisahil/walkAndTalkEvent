@@ -84,6 +84,7 @@ model PasswordResetOtp {
   id         String    @id @default(uuid())
   userId     String
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose    String    @default("PASSWORD_RESET")
   codeHash   String
   expiresAt  DateTime
   consumedAt DateTime?
@@ -91,6 +92,7 @@ model PasswordResetOtp {
   createdAt  DateTime  @default(now())
 
   @@index([userId])
+  @@index([purpose])
 }
 
 model User {
@@ -101,6 +103,7 @@ model User {
   age                 Int?
   instagramUsername   String?
   instagramProfileUrl String?
+  linkedinProfileUrl  String?
   password            String
   role                UserRole @default(CUSTOMER)
 
@@ -148,6 +151,17 @@ model Event {
   @@index([status])
 }
 
+model ApprovalInvite {
+  id              String    @id @default(uuid())
+  ticketRequestId String    @unique
+  ticketRequest   TicketRequest @relation(fields: [ticketRequestId], references: [id], onDelete: Cascade)
+  tokenHash       String    @unique
+  expiresAt       DateTime
+  createdAt       DateTime  @default(now())
+
+  @@index([expiresAt])
+}
+
 model TicketRequest {
   id String @id @default(uuid())
 
@@ -167,6 +181,7 @@ model TicketRequest {
 
   payment Payment?
   ticket  Ticket?
+  invite  ApprovalInvite?
 
   @@unique([userId, eventId])
   @@index([userId])

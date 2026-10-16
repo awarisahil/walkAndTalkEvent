@@ -42,6 +42,12 @@ export const updateProfileSchema = z.object({
     .trim()
     .url("Invalid Instagram profile URL")
     .nullish(),
+
+  linkedinProfileUrl: z
+    .string()
+    .trim()
+    .url("Invalid LinkedIn profile URL")
+    .nullish(),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

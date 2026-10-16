@@ -56,6 +56,7 @@ export const ModelName = {
   PasswordResetOtp: 'PasswordResetOtp',
   User: 'User',
   Event: 'Event',
+  ApprovalInvite: 'ApprovalInvite',
   TicketRequest: 'TicketRequest',
   Payment: 'Payment',
   Ticket: 'Ticket'
@@ -106,6 +107,7 @@ export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[k
 export const PasswordResetOtpScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  purpose: 'purpose',
   codeHash: 'codeHash',
   expiresAt: 'expiresAt',
   consumedAt: 'consumedAt',
@@ -124,6 +126,7 @@ export const UserScalarFieldEnum = {
   age: 'age',
   instagramUsername: 'instagramUsername',
   instagramProfileUrl: 'instagramProfileUrl',
+  linkedinProfileUrl: 'linkedinProfileUrl',
   password: 'password',
   role: 'role',
   createdAt: 'createdAt',
@@ -150,6 +153,17 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const ApprovalInviteScalarFieldEnum = {
+  id: 'id',
+  ticketRequestId: 'ticketRequestId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ApprovalInviteScalarFieldEnum = (typeof ApprovalInviteScalarFieldEnum)[keyof typeof ApprovalInviteScalarFieldEnum]
 
 
 export const TicketRequestScalarFieldEnum = {

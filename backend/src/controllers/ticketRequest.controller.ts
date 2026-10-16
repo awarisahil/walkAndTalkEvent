@@ -9,7 +9,7 @@ import {
   createTicketRequest,
   getTicketRequestsForAdmin,
   getTicketRequestById,
-  approveTicketRequest,
+  approveAndNotify,
   rejectTicketRequest,
   cancelTicketRequest,
   getMyTicketRequests,
@@ -73,7 +73,7 @@ export const getTicketRequestsForAdminController = asyncHandler(
 
 export const approveTicketRequestController = asyncHandler(
   async (req: AuthenticatedRequest, res: Response) => {
-    const ticketRequest = await approveTicketRequest(
+    const ticketRequest = await approveAndNotify(
       String(req.params.id),
     );
 

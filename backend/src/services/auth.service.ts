@@ -37,7 +37,7 @@ const sessionUserSelect = {
   createdAt: true,
 } as const;
 
-async function issueSession(userId: string, role: "ADMIN" | "CUSTOMER") {
+export async function issueSession(userId: string, role: "ADMIN" | "CUSTOMER") {
   const accessToken = generateAccessToken({ userId, role });
   const refreshToken = newRefreshToken();
 

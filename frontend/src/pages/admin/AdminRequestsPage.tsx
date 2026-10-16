@@ -245,6 +245,19 @@ export default function AdminRequestsPage() {
                         ) : (
                           "no Instagram"
                         )}
+                        {request.user.linkedinProfileUrl ? (
+                          <>
+                            {" · "}
+                            <a
+                              href={request.user.linkedinProfileUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="admin-linkedin-link"
+                            >
+                              in
+                            </a>
+                          </>
+                        ) : null}
                       </div>
                     </td>
                     <td>

@@ -42,6 +42,7 @@ export type UserMinAggregateOutputType = {
   age: number | null
   instagramUsername: string | null
   instagramProfileUrl: string | null
+  linkedinProfileUrl: string | null
   password: string | null
   role: $Enums.UserRole | null
   createdAt: Date | null
@@ -56,6 +57,7 @@ export type UserMaxAggregateOutputType = {
   age: number | null
   instagramUsername: string | null
   instagramProfileUrl: string | null
+  linkedinProfileUrl: string | null
   password: string | null
   role: $Enums.UserRole | null
   createdAt: Date | null
@@ -70,6 +72,7 @@ export type UserCountAggregateOutputType = {
   age: number
   instagramUsername: number
   instagramProfileUrl: number
+  linkedinProfileUrl: number
   password: number
   role: number
   createdAt: number
@@ -94,6 +97,7 @@ export type UserMinAggregateInputType = {
   age?: true
   instagramUsername?: true
   instagramProfileUrl?: true
+  linkedinProfileUrl?: true
   password?: true
   role?: true
   createdAt?: true
@@ -108,6 +112,7 @@ export type UserMaxAggregateInputType = {
   age?: true
   instagramUsername?: true
   instagramProfileUrl?: true
+  linkedinProfileUrl?: true
   password?: true
   role?: true
   createdAt?: true
@@ -122,6 +127,7 @@ export type UserCountAggregateInputType = {
   age?: true
   instagramUsername?: true
   instagramProfileUrl?: true
+  linkedinProfileUrl?: true
   password?: true
   role?: true
   createdAt?: true
@@ -223,6 +229,7 @@ export type UserGroupByOutputType = {
   age: number | null
   instagramUsername: string | null
   instagramProfileUrl: string | null
+  linkedinProfileUrl: string | null
   password: string
   role: $Enums.UserRole
   createdAt: Date
@@ -260,6 +267,7 @@ export type UserWhereInput = {
   age?: Prisma.IntNullableFilter<"User"> | number | null
   instagramUsername?: Prisma.StringNullableFilter<"User"> | string | null
   instagramProfileUrl?: Prisma.StringNullableFilter<"User"> | string | null
+  linkedinProfileUrl?: Prisma.StringNullableFilter<"User"> | string | null
   password?: Prisma.StringFilter<"User"> | string
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -281,6 +289,7 @@ export type UserOrderByWithRelationInput = {
   age?: Prisma.SortOrderInput | Prisma.SortOrder
   instagramUsername?: Prisma.SortOrderInput | Prisma.SortOrder
   instagramProfileUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  linkedinProfileUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -305,6 +314,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   age?: Prisma.IntNullableFilter<"User"> | number | null
   instagramUsername?: Prisma.StringNullableFilter<"User"> | string | null
   instagramProfileUrl?: Prisma.StringNullableFilter<"User"> | string | null
+  linkedinProfileUrl?: Prisma.StringNullableFilter<"User"> | string | null
   password?: Prisma.StringFilter<"User"> | string
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -326,6 +336,7 @@ export type UserOrderByWithAggregationInput = {
   age?: Prisma.SortOrderInput | Prisma.SortOrder
   instagramUsername?: Prisma.SortOrderInput | Prisma.SortOrder
   instagramProfileUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  linkedinProfileUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -348,6 +359,7 @@ export type UserScalarWhereWithAggregatesInput = {
   age?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
   instagramUsername?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   instagramProfileUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  linkedinProfileUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
   role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -362,6 +374,7 @@ export type UserCreateInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -383,6 +396,7 @@ export type UserUncheckedCreateInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -404,6 +418,7 @@ export type UserUpdateInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -425,6 +440,7 @@ export type UserUncheckedUpdateInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -446,6 +462,7 @@ export type UserCreateManyInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -460,6 +477,7 @@ export type UserUpdateManyMutationInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -474,6 +492,7 @@ export type UserUncheckedUpdateManyInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -493,6 +512,7 @@ export type UserCountOrderByAggregateInput = {
   age?: Prisma.SortOrder
   instagramUsername?: Prisma.SortOrder
   instagramProfileUrl?: Prisma.SortOrder
+  linkedinProfileUrl?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -511,6 +531,7 @@ export type UserMaxOrderByAggregateInput = {
   age?: Prisma.SortOrder
   instagramUsername?: Prisma.SortOrder
   instagramProfileUrl?: Prisma.SortOrder
+  linkedinProfileUrl?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -525,6 +546,7 @@ export type UserMinOrderByAggregateInput = {
   age?: Prisma.SortOrder
   instagramUsername?: Prisma.SortOrder
   instagramProfileUrl?: Prisma.SortOrder
+  linkedinProfileUrl?: Prisma.SortOrder
   password?: Prisma.SortOrder
   role?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -660,6 +682,7 @@ export type UserCreateWithoutCommunityPostsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -680,6 +703,7 @@ export type UserUncheckedCreateWithoutCommunityPostsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -716,6 +740,7 @@ export type UserUpdateWithoutCommunityPostsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -736,6 +761,7 @@ export type UserUncheckedUpdateWithoutCommunityPostsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -756,6 +782,7 @@ export type UserCreateWithoutRefreshTokensInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -776,6 +803,7 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -812,6 +840,7 @@ export type UserUpdateWithoutRefreshTokensInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -832,6 +861,7 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -852,6 +882,7 @@ export type UserCreateWithoutPasswordResetOtpsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -872,6 +903,7 @@ export type UserUncheckedCreateWithoutPasswordResetOtpsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -908,6 +940,7 @@ export type UserUpdateWithoutPasswordResetOtpsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -928,6 +961,7 @@ export type UserUncheckedUpdateWithoutPasswordResetOtpsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -948,6 +982,7 @@ export type UserCreateWithoutTicketRequestsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -968,6 +1003,7 @@ export type UserUncheckedCreateWithoutTicketRequestsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -1004,6 +1040,7 @@ export type UserUpdateWithoutTicketRequestsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1024,6 +1061,7 @@ export type UserUncheckedUpdateWithoutTicketRequestsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1044,6 +1082,7 @@ export type UserCreateWithoutPaymentsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -1064,6 +1103,7 @@ export type UserUncheckedCreateWithoutPaymentsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -1100,6 +1140,7 @@ export type UserUpdateWithoutPaymentsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1120,6 +1161,7 @@ export type UserUncheckedUpdateWithoutPaymentsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1140,6 +1182,7 @@ export type UserCreateWithoutCheckedInTicketsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -1160,6 +1203,7 @@ export type UserUncheckedCreateWithoutCheckedInTicketsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -1185,6 +1229,7 @@ export type UserCreateWithoutTicketsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -1205,6 +1250,7 @@ export type UserUncheckedCreateWithoutTicketsInput = {
   age?: number | null
   instagramUsername?: string | null
   instagramProfileUrl?: string | null
+  linkedinProfileUrl?: string | null
   password: string
   role?: $Enums.UserRole
   createdAt?: Date | string
@@ -1241,6 +1287,7 @@ export type UserUpdateWithoutCheckedInTicketsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1261,6 +1308,7 @@ export type UserUncheckedUpdateWithoutCheckedInTicketsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1292,6 +1340,7 @@ export type UserUpdateWithoutTicketsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1312,6 +1361,7 @@ export type UserUncheckedUpdateWithoutTicketsInput = {
   age?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   instagramUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   instagramProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  linkedinProfileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1417,6 +1467,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   age?: boolean
   instagramUsername?: boolean
   instagramProfileUrl?: boolean
+  linkedinProfileUrl?: boolean
   password?: boolean
   role?: boolean
   createdAt?: boolean
@@ -1439,6 +1490,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   age?: boolean
   instagramUsername?: boolean
   instagramProfileUrl?: boolean
+  linkedinProfileUrl?: boolean
   password?: boolean
   role?: boolean
   createdAt?: boolean
@@ -1453,6 +1505,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   age?: boolean
   instagramUsername?: boolean
   instagramProfileUrl?: boolean
+  linkedinProfileUrl?: boolean
   password?: boolean
   role?: boolean
   createdAt?: boolean
@@ -1467,13 +1520,14 @@ export type UserSelectScalar = {
   age?: boolean
   instagramUsername?: boolean
   instagramProfileUrl?: boolean
+  linkedinProfileUrl?: boolean
   password?: boolean
   role?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "age" | "instagramUsername" | "instagramProfileUrl" | "password" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "age" | "instagramUsername" | "instagramProfileUrl" | "linkedinProfileUrl" | "password" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ticketRequests?: boolean | Prisma.User$ticketRequestsArgs<ExtArgs>
   payments?: boolean | Prisma.User$paymentsArgs<ExtArgs>
@@ -1506,6 +1560,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     age: number | null
     instagramUsername: string | null
     instagramProfileUrl: string | null
+    linkedinProfileUrl: string | null
     password: string
     role: $Enums.UserRole
     createdAt: Date
@@ -1947,6 +2002,7 @@ export interface UserFieldRefs {
   readonly age: Prisma.FieldRef<"User", 'Int'>
   readonly instagramUsername: Prisma.FieldRef<"User", 'String'>
   readonly instagramProfileUrl: Prisma.FieldRef<"User", 'String'>
+  readonly linkedinProfileUrl: Prisma.FieldRef<"User", 'String'>
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'UserRole'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>

@@ -1,0 +1,124 @@
+.invite-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(60% 50% at 15% 0%, var(--color-accent-soft) 0%, transparent 60%),
+    var(--cream);
+}
+
+.invite-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-block: 48px;
+}
+
+.invite-wrap .full-page-loading {
+  min-height: 40vh;
+}
+
+.invite-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 28px;
+}
+
+.invite-head {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.invite-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--forest);
+}
+
+.invite-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.invite-attendee {
+  font-size: 0.9rem;
+}
+
+.invite-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.invite-amount-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg-subtle);
+}
+
+.invite-amount {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.invite-ticket {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.invite-ticket-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.invite-ticket-number {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.invite-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.invite-qr-canvas {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: #fff;
+}
+
+.invite-footer {
+  text-align: center;
+  padding: 18px 20px 24px;
+  font-size: 0.85rem;
+}
+
+.invite-footer a {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.invite-footer a:hover {
+  color: var(--color-text);
+}

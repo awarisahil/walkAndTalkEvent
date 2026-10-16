@@ -9,8 +9,12 @@ import {
 import {
   requestPasswordReset,
   resetPasswordWithOtp,
+  requestEmailLoginCode,
+  loginWithEmailCode,
 } from "../services/passwordReset.service";
 import {
+  emailCodeSchema,
+  emailLoginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "../validators/auth.validator";
@@ -98,5 +102,33 @@ export const resetPassword = asyncHandler(
     const data = await resetPasswordWithOtp(result.data);
 
     return ok(res, data);
+  },
+);
+
+export const emailCode = asyncHandler(
+  async (req: Request, res: Response) => {
+    const result = emailCodeSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw badRequest("Invalid input", result.error.flatten());
+    }
+
+    const data = await requestEmailLoginCode(result.data.email);
+
+    return ok(res, data);
+  },
+);
+
+export const emailLogin = asyncHandler(
+  async (req: Request, res: Response) => {
+    const result = emailLoginSchema.safeParse(req.body);
+
+    if (!result.success) {
+      throw badRequest("Invalid input", result.error.flatten());
+    }
+
+    const data = await loginWithEmailCode(result.data);
+
+    return ok(res, data, { message: "Login successful" });
   },
 );

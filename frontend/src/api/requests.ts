@@ -2,6 +2,8 @@ import client from "./client";
 import { unwrap } from "./auth";
 import type {
   AdminTicketRequest,
+  GuestJoinPayload,
+  GuestJoinResponse,
   PagedResult,
   TicketRequest,
   TicketRequestStatus,
@@ -56,4 +58,10 @@ export async function rejectTicketRequest(
 ): Promise<AdminTicketRequest> {
   const res = await client.patch(`/ticket-requests/${id}/reject`, { rejectionReason });
   return unwrap<AdminTicketRequest>(res);
+}
+
+/** Public "Request to Join" — no account needed (Luma-style). */
+export async function guestJoin(payload: GuestJoinPayload): Promise<GuestJoinResponse> {
+  const res = await client.post("/ticket-requests/guest", payload);
+  return unwrap<GuestJoinResponse>(res);
 }

@@ -402,6 +402,7 @@ export const ModelName = {
   PasswordResetOtp: 'PasswordResetOtp',
   User: 'User',
   Event: 'Event',
+  ApprovalInvite: 'ApprovalInvite',
   TicketRequest: 'TicketRequest',
   Payment: 'Payment',
   Ticket: 'Ticket'
@@ -420,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "communityPost" | "refreshToken" | "passwordResetOtp" | "user" | "event" | "ticketRequest" | "payment" | "ticket"
+    modelProps: "communityPost" | "refreshToken" | "passwordResetOtp" | "user" | "event" | "approvalInvite" | "ticketRequest" | "payment" | "ticket"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -794,6 +795,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ApprovalInvite: {
+      payload: Prisma.$ApprovalInvitePayload<ExtArgs>
+      fields: Prisma.ApprovalInviteFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ApprovalInviteFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ApprovalInviteFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload>
+        }
+        findFirst: {
+          args: Prisma.ApprovalInviteFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ApprovalInviteFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload>
+        }
+        findMany: {
+          args: Prisma.ApprovalInviteFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload>[]
+        }
+        create: {
+          args: Prisma.ApprovalInviteCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload>
+        }
+        createMany: {
+          args: Prisma.ApprovalInviteCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ApprovalInviteCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload>[]
+        }
+        delete: {
+          args: Prisma.ApprovalInviteDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload>
+        }
+        update: {
+          args: Prisma.ApprovalInviteUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload>
+        }
+        deleteMany: {
+          args: Prisma.ApprovalInviteDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ApprovalInviteUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ApprovalInviteUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload>[]
+        }
+        upsert: {
+          args: Prisma.ApprovalInviteUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ApprovalInvitePayload>
+        }
+        aggregate: {
+          args: Prisma.ApprovalInviteAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateApprovalInvite>
+        }
+        groupBy: {
+          args: Prisma.ApprovalInviteGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApprovalInviteGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ApprovalInviteCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ApprovalInviteCountAggregateOutputType> | number
+        }
+      }
+    }
     TicketRequest: {
       payload: Prisma.$TicketRequestPayload<ExtArgs>
       fields: Prisma.TicketRequestFieldRefs
@@ -1084,6 +1159,7 @@ export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[k
 export const PasswordResetOtpScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  purpose: 'purpose',
   codeHash: 'codeHash',
   expiresAt: 'expiresAt',
   consumedAt: 'consumedAt',
@@ -1102,6 +1178,7 @@ export const UserScalarFieldEnum = {
   age: 'age',
   instagramUsername: 'instagramUsername',
   instagramProfileUrl: 'instagramProfileUrl',
+  linkedinProfileUrl: 'linkedinProfileUrl',
   password: 'password',
   role: 'role',
   createdAt: 'createdAt',
@@ -1128,6 +1205,17 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const ApprovalInviteScalarFieldEnum = {
+  id: 'id',
+  ticketRequestId: 'ticketRequestId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ApprovalInviteScalarFieldEnum = (typeof ApprovalInviteScalarFieldEnum)[keyof typeof ApprovalInviteScalarFieldEnum]
 
 
 export const TicketRequestScalarFieldEnum = {
@@ -1517,6 +1605,7 @@ export type GlobalOmitConfig = {
   passwordResetOtp?: Prisma.PasswordResetOtpOmit
   user?: Prisma.UserOmit
   event?: Prisma.EventOmit
+  approvalInvite?: Prisma.ApprovalInviteOmit
   ticketRequest?: Prisma.TicketRequestOmit
   payment?: Prisma.PaymentOmit
   ticket?: Prisma.TicketOmit

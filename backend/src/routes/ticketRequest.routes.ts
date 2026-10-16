@@ -9,10 +9,15 @@ import {
   getMyTicketRequestsController,
   getMyPaymentPendingRequestsController,
 } from "../controllers/ticketRequest.controller";
+import { guestJoinController } from "../controllers/guestJoin.controller";
 import { authenticate } from "../middleware/auth.middleware";
 import { authorize } from "../middleware/role.middleware";
+import { passwordResetRateLimiter } from "../middleware/rateLimit.middleware";
 
 const router = Router();
+
+// Public guest "Request to Join" (Luma-style; no account needed)
+router.post("/guest", passwordResetRateLimiter, guestJoinController);
 
 router.post(
   "/",

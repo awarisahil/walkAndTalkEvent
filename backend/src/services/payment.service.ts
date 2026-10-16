@@ -14,6 +14,8 @@ import {
   countOccupiedPlaces,
   expireStaleReservations,
 } from "./reservation.service";
+import { sendCongratulationsEmail } from "./email.service";
+import { publicAppUrl } from "./ticketRequest.service";
 import {
   createRazorpayOrder,
   getRazorpayKeyId,
@@ -164,15 +166,50 @@ export async function fulfillPayment(
   });
 }
 
+/** Emails the attendee their confirmed ticket after payment. The link is
+ *  shareable — anyone with it can view the ticket/QR (no login). */
+export async function sendCongratulations(
+  paymentId: string,
+  options?: { inviteToken?: string },
+) {
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
+    select: {
+      user: { select: { name: true, email: true } },
+      event: { select: { id: true, title: true } },
+      ticketRequest: {
+        select: {
+          ticket: { select: { ticketNumber: true } },
+        },
+      },
+    },
+  });
+
+  if (!payment) return;
+
+  const ticket = payment.ticketRequest.ticket;
+  if (!ticket) return;
+
+  const ticketUrl = options?.inviteToken
+    ? `${publicAppUrl()}/pay/${options.inviteToken}`
+    : `${publicAppUrl()}/login`;
+
+  await sendCongratulationsEmail(
+    payment.user.email,
+    payment.user.name,
+    payment.event.title,
+    ticket.ticketNumber,
+    ticketUrl,
+  );
+}
+
 export async function createPayment(
   userId: string,
   input: CreatePaymentInput,
 ) {
-  await expireStaleReservations();
-
   const request = await prisma.ticketRequest.findUnique({
     where: { id: input.ticketRequestId },
-    include: { event: true, payment: true },
+    select: { userId: true },
   });
 
   if (!request) throw notFound("Ticket request not found");
@@ -182,6 +219,23 @@ export async function createPayment(
       "You do not have permission to pay for this ticket request",
     );
   }
+
+  return createPaymentForRequest(input.ticketRequestId);
+}
+
+/**
+ * Creates (or idempotently re-initializes) the payment for an approved
+ * request. Ownership is established by the caller (session or invite token).
+ */
+export async function createPaymentForRequest(ticketRequestId: string) {
+  await expireStaleReservations();
+
+  const request = await prisma.ticketRequest.findUnique({
+    where: { id: ticketRequestId },
+    include: { event: true, payment: true },
+  });
+
+  if (!request) throw notFound("Ticket request not found");
 
   if (request.status !== "PAYMENT_PENDING") {
     throw badRequest(
@@ -195,9 +249,21 @@ export async function createPayment(
 
   if (request.payment) {
     if (request.payment.status === "PENDING") {
-      // Idempotent re-init: return the existing payment so the client
-      // can resume the same checkout attempt.
-      return request.payment;
+      return prisma.payment.findUnique({
+        where: { id: request.payment.id },
+        select: {
+          id: true,
+          amount: true,
+          status: true,
+          provider: true,
+          providerOrderId: true,
+          createdAt: true,
+          event: {
+            select: { id: true, title: true, date: true, venue: true },
+          },
+          ticketRequest: { select: { id: true, status: true } },
+        },
+      });
     }
     if (request.payment.status === "SUCCESS") {
       throw conflict("This request has already been paid");
@@ -206,24 +272,20 @@ export async function createPayment(
     // the one-payment-per-request invariant holds.
   }
 
-  const data = request.payment
-    ? {
+  const payment = request.payment
+    ? await prisma.payment.update({
         where: { id: request.payment.id },
         data: {
-          status: "PENDING" as const,
+          status: "PENDING",
           amount: request.event.ticketPrice,
           provider: "RAZORPAY",
           providerOrderId: null,
           providerPaymentId: null,
         },
-      }
-    : null;
-
-  const payment = data
-    ? await prisma.payment.update(data)
+      })
     : await prisma.payment.create({
         data: {
-          userId,
+          userId: request.userId,
           eventId: request.eventId,
           ticketRequestId: request.id,
           amount: request.event.ticketPrice,
@@ -241,9 +303,7 @@ export async function createPayment(
       provider: true,
       providerOrderId: true,
       createdAt: true,
-      event: {
-        select: { id: true, title: true, date: true, venue: true },
-      },
+      event: { select: { id: true, title: true, date: true, venue: true } },
       ticketRequest: { select: { id: true, status: true } },
     },
   });
@@ -253,6 +313,23 @@ export async function createOrderForPayment(
   userId: string,
   paymentId: string,
 ) {
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
+    select: { userId: true },
+  });
+
+  if (!payment) throw notFound("Payment not found");
+
+  if (payment.userId !== userId) {
+    throw forbidden(
+      "You do not have permission to pay for this ticket request",
+    );
+  }
+
+  return createOrderForPaymentInternal(paymentId);
+}
+
+export async function createOrderForPaymentInternal(paymentId: string) {
   if (!razorpayEnabled()) {
     throw badRequest(
       "Online payments are not configured yet; please contact the organizer",
@@ -265,12 +342,6 @@ export async function createOrderForPayment(
   });
 
   if (!payment) throw notFound("Payment not found");
-
-  if (payment.userId !== userId) {
-    throw forbidden(
-      "You do not have permission to pay for this ticket request",
-    );
-  }
 
   if (payment.status !== "PENDING") {
     throw conflict("This payment can no longer be processed");
@@ -328,6 +399,19 @@ export async function verifyAndFulfillPayment(
     );
   }
 
+  return verifyAndFulfillPaymentInternal(payment.id, input);
+}
+
+/** Signature verification + fulfillment. Callers must establish that the
+ *  order belongs to the request they scoped (session user or invite token). */
+export async function verifyAndFulfillPaymentInternal(
+  paymentId: string,
+  input: {
+    razorpayOrderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
+  },
+) {
   const valid = verifyPaymentSignature({
     orderId: input.razorpayOrderId,
     paymentId: input.razorpayPaymentId,
@@ -338,7 +422,7 @@ export async function verifyAndFulfillPayment(
     throw badRequest("Payment verification failed");
   }
 
-  return fulfillPayment(payment.id, {
+  return fulfillPayment(paymentId, {
     providerPaymentId: input.razorpayPaymentId,
   });
 }

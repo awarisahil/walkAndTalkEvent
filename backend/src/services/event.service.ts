@@ -319,9 +319,20 @@ export async function completeEvent(eventId: string) {
     throw conflict("Only published events can be completed");
   }
 
-  return prisma.event.update({
-    where: { id: eventId },
-    data: { status: "COMPLETED" },
-    select: eventCardSelect,
+  return prisma.$transaction(async (tx) => {
+    const completed = await tx.event.update({
+      where: { id: eventId },
+      data: { status: "COMPLETED" },
+      select: eventCardSelect,
+    });
+
+    // The event is over — its tickets are no longer valid anywhere
+    // (check-in, ticket views, attendee lists).
+    await tx.ticket.updateMany({
+      where: { eventId, status: "ACTIVE" },
+      data: { status: "CANCELLED" },
+    });
+
+    return completed;
   });
 }

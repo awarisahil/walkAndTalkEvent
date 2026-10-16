@@ -1,10 +1,7 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/useAuth";
 import "./Footer.css";
 
 export default function Footer() {
-  const { user } = useAuth();
-
   return (
     <footer className="footer">
       <svg
@@ -27,12 +24,8 @@ export default function Footer() {
         </div>
         <nav className="footer-nav" aria-label="Footer">
           <Link to="/events">Browse events</Link>
-          {user ? null : (
-            <>
-              <Link to="/login">Log in</Link>
-              <Link to="/register">Create account</Link>
-            </>
-          )}
+          <Link to="/community">Community</Link>
+          <Link to="/admin">Admin login</Link>
         </nav>
       </div>
     </footer>

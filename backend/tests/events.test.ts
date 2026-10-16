@@ -10,6 +10,7 @@ import {
   requestTicket,
   uniqueEmail,
 } from "./helpers";
+import prisma from "../src/config/prisma";
 
 describe("events", () => {
   it("admin creates an event as DRAFT: in admin list, hidden from public list", async () => {
@@ -294,5 +295,40 @@ describe("events", () => {
       .set(auth(admin.token))
       .send({ capacity: 1 });
     expect(reduce.status).toBe(409);
+  });
+
+  it("completing an event invalidates its tickets", async () => {
+    const app = await getApp();
+    const admin = await loginAdmin();
+    const event = await createEvent(admin.token, { capacity: 5 });
+
+    const customer = await registerAndLogin("ev-complete");
+    const req = await requestTicket(customer.token, event.id);
+    await approveRequest(admin.token, req.body.data.id);
+    const payment = await request(app)
+      .post("/api/payments")
+      .set(auth(customer.token))
+      .send({ ticketRequestId: req.body.data.id });
+    const done = await request(app)
+      .patch(`/api/payments/${payment.body.data.id}/complete`)
+      .set(auth(customer.token));
+    expect(done.status).toBe(200);
+    const ticketId = done.body.data.ticket.id;
+    expect(done.body.data.ticket.status).toBe("ACTIVE");
+
+    const completed = await request(app)
+      .patch(`/api/events/${event.id}/complete`)
+      .set(auth(admin.token));
+    expect(completed.status).toBe(200);
+
+    const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+    expect(ticket!.status).toBe("CANCELLED");
+
+    // Destroyed tickets cannot be checked in
+    const checkIn = await request(app)
+      .post("/api/tickets/check-in")
+      .set(auth(admin.token))
+      .send({ ticketNumber: ticket!.ticketNumber, eventId: event.id });
+    expect(checkIn.status).toBe(409);
   });
 });

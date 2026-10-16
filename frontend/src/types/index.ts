@@ -217,6 +217,7 @@ export interface AdminTicketRequest extends TicketRequest {
     age: number | null;
     instagramUsername: string | null;
     instagramProfileUrl: string | null;
+    linkedinProfileUrl: string | null;
   };
 }
 
@@ -331,4 +332,87 @@ export interface CreateCommunityPostPayload {
 /** Response of POST /community/upload — a same-origin "/uploads/..." path. */
 export interface CommunityUploadResponse {
   url: string;
+}
+
+
+/* ---------- guest join + invite-scoped payment ---------- */
+
+export interface GuestJoinResponse {
+  requestId: string;
+  eventTitle: string;
+  /** Per-request browser token for the same-browser status/payment flow. */
+  inviteToken?: string;
+  alreadyExists?: boolean;
+}
+
+export interface GuestJoinPayload {
+  eventId: string;
+  name: string;
+  email: string;
+  phone: string;
+  instagramUsername: string;
+  instagramProfileUrl?: string;
+  linkedinProfileUrl?: string;
+  age: number;
+}
+
+export interface InviteAttendee {
+  name: string;
+  email: string;
+  instagramUsername: string | null;
+}
+
+export interface InviteEvent {
+  id: string;
+  title: string;
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
+  venue: string;
+  ticketPrice: string;
+}
+
+export interface InvitePayment {
+  id: string;
+  status: PaymentStatus;
+  amount: string;
+  providerOrderId: string | null;
+}
+
+export interface InviteTicket {
+  id: string;
+  ticketNumber: string;
+  status: TicketStatus;
+  qrCode: string;
+  usedAt: string | null;
+}
+
+export interface InviteState {
+  requestId: string;
+  status: TicketRequestStatus;
+  reservationValid: boolean;
+  rejectionReason: string | null;
+  attendee: InviteAttendee;
+  event: InviteEvent;
+  payment: InvitePayment | null;
+  ticket: InviteTicket | null;
+  expiresAt: string;
+}
+
+export interface InvitePayResponse {
+  payment: InvitePayment;
+  order: { id: string; amount: number; currency: string } | null;
+  keyId: string | null;
+}
+
+export interface InviteVerifyResponse {
+  payment: { id: string; amount: string; status: PaymentStatus };
+  ticket: {
+    id: string;
+    ticketNumber: string;
+    status: TicketStatus;
+    qrCode: string;
+    createdAt?: string;
+  } | null;
+  alreadyProcessed: boolean;
 }

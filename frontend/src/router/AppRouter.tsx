@@ -7,7 +7,6 @@ import EventsPage from "../pages/EventsPage";
 import EventDetailPage from "../pages/EventDetailPage";
 import LoginPage from "../pages/LoginPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
-import RegisterPage from "../pages/RegisterPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import OverviewPage from "../pages/dashboard/OverviewPage";
 import RequestsPage from "../pages/dashboard/RequestsPage";
@@ -30,6 +29,7 @@ import AdminPaymentsPage from "../pages/admin/AdminPaymentsPage";
 import AdminCheckInPage from "../pages/admin/AdminCheckInPage";
 import AdminCommunityPage from "../pages/admin/AdminCommunityPage";
 import CommunityPage from "../pages/CommunityPage";
+import InvitePayPage from "../pages/InvitePayPage";
 
 export default function AppRouter() {
   return (
@@ -41,10 +41,13 @@ export default function AppRouter() {
           <Route path="/events/:id" element={<EventDetailPage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
+
+        {/* Standalone invite payment page — opened from approval emails,
+            intentionally outside the public layout (no navbar/footer). */}
+        <Route path="/pay/:token" element={<InvitePayPage />} />
 
         <Route
           path="/dashboard"
