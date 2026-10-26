@@ -34,3 +34,15 @@ export async function checkInTicket(
   });
   return unwrap<CheckInResult>(res);
 }
+
+/** Direct check-in by the opaque QR token (what ticket QR codes encode). */
+export async function checkInTicketByQr(
+  qrToken: string,
+  eventId?: string,
+): Promise<CheckInResult> {
+  const res = await client.post("/tickets/check-in", {
+    qrToken,
+    eventId: eventId || undefined,
+  });
+  return unwrap<CheckInResult>(res);
+}

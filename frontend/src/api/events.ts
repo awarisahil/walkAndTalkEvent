@@ -1,6 +1,7 @@
 import client from "./client";
 import { unwrap } from "./auth";
 import type {
+  AdminEvent,
   AdminEventDetail,
   AttendeesResponse,
   Event,
@@ -25,9 +26,9 @@ export async function fetchAdminEvents(params: {
   page?: number;
   pageSize?: number;
   status?: EventStatus;
-} = {}): Promise<PagedResult<Event>> {
+} = {}): Promise<PagedResult<AdminEvent>> {
   const res = await client.get("/events/admin", { params });
-  return unwrap<PagedResult<Event>>(res);
+  return unwrap<PagedResult<AdminEvent>>(res);
 }
 
 export async function fetchAdminEvent(id: string): Promise<AdminEventDetail> {

@@ -1,0 +1,26 @@
+.attendee-stack {
+  display: inline-flex;
+  align-items: center;
+}
+
+.attendee-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.attendee-chip + .attendee-chip {
+  margin-left: -8px;
+}
+
+.attendee-chip-more {
+  background: #e7e5e4;
+  color: #44403c;
+}

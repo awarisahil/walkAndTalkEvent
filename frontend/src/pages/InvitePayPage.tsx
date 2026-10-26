@@ -10,6 +10,7 @@ import {
 import ErrorState from "../components/ErrorState";
 import Spinner from "../components/Spinner";
 import StatusBadge from "../components/StatusBadge";
+import UpiQrPay from "../components/UpiQrPay";
 import { useAsyncData } from "../hooks/useAsyncData";
 import type { InviteState } from "../types";
 import { formatDateTime, formatEventTime, formatINR } from "../utils/format";
@@ -304,6 +305,11 @@ function InviteBody({
               {busy ? "Opening checkout…" : `Pay ${formatINR(amount)} securely`}
             </button>
           )}
+          <UpiQrPay
+            token={String(token)}
+            amount={amount}
+            onPaid={onChanged}
+          />
         </section>
       ) : state.status === "PAYMENT_PENDING" ? (
         <section className="invite-section">

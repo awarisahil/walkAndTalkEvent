@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { checkInTicket, lookupTicket } from "../../api/tickets";
+import { checkInTicket, checkInTicketByQr, lookupTicket } from "../../api/tickets";
 import { fetchAdminEvents } from "../../api/events";
 import Spinner from "../../components/Spinner";
 import StatusBadge from "../../components/StatusBadge";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import type { CheckInResult, Event, TicketLookupResult } from "../../types";
 import { formatDateTime } from "../../utils/format";
-import QrScanner from "./QrScanner";
+import QrScanner, { PhotoQrCapture } from "./QrScanner";
 import "./AdminPages.css";
 import "./AdminCheckInPage.css";
 
@@ -34,7 +34,7 @@ export default function AdminCheckInPage() {
     "BarcodeDetector" in window &&
     Boolean(navigator.mediaDevices?.getUserMedia);
 
-  async function runLookup(number: string, selectedEventId: string) {
+  async function runLookup(number: string, selectedEventId: string): Promise<boolean> {
     setLookingUp(true);
     setLookupError(null);
     setCheckInError(null);
@@ -42,9 +42,11 @@ export default function AdminCheckInPage() {
     try {
       const result = await lookupTicket(number, selectedEventId || undefined);
       setLookupResult(result);
+      return true;
     } catch (err) {
       setLookupResult(null);
       setLookupError(err instanceof Error ? err.message : "Ticket not found.");
+      return false;
     } finally {
       setLookingUp(false);
     }
@@ -78,10 +80,34 @@ export default function AdminCheckInPage() {
     }
   }
 
-  function handleScanned(value: string) {
+  async function handleScanned(value: string) {
     setScanning(false);
     setTicketNumber(value);
-    void runLookup(value, eventId);
+    setScannerError(null);
+    const found = await runLookup(value, eventId);
+    if (found) return;
+
+    // Not a ticket number — a scanned QR carries the opaque qr token, which
+    // the lookup endpoint doesn't index. Check it in directly (door intent).
+    setLookingUp(true);
+    setLookupError(null);
+    try {
+      const result = await checkInTicketByQr(value, eventId || undefined);
+      setCheckInSuccess(result);
+      setLookupResult({
+        id: result.id,
+        ticketNumber: result.ticketNumber,
+        status: "USED",
+        usedAt: result.usedAt,
+        createdAt: result.usedAt,
+        event: { ...result.event, date: "", venue: "" },
+        user: result.user,
+      });
+    } catch (err) {
+      setLookupError(err instanceof Error ? err.message : "Could not check in this QR.");
+    } finally {
+      setLookingUp(false);
+    }
   }
 
   return (
@@ -149,7 +175,10 @@ export default function AdminCheckInPage() {
                 <div>
                   <span className="checkin-result-number">{lookupResult.ticketNumber}</span>
                   <div className="muted" style={{ fontSize: "0.85rem" }}>
-                    {lookupResult.event.title} · {formatDateTime(lookupResult.event.date)}
+                    {lookupResult.event.title}
+                    {lookupResult.event.date
+                      ? ` · ${formatDateTime(lookupResult.event.date)}`
+                      : ""}
                   </div>
                 </div>
                 <StatusBadge status={lookupResult.status} kind="ticket" />
@@ -212,14 +241,16 @@ export default function AdminCheckInPage() {
           ) : null}
 
           {!scannerSupported ? (
-            <p className="muted">
-              Camera scanning is not supported in this browser — use manual entry.
-            </p>
-          ) : !scanning ? (
+            <div className="banner banner-info" role="status" style={{ marginBottom: 12 }}>
+              Live camera needs HTTPS — use Take photo or type the ticket number below.
+            </div>
+          ) : null}
+
+          {!scannerSupported ? null : !scanning ? (
             <>
               <p className="muted" style={{ marginBottom: 12 }}>
-                Point the camera at a ticket's QR code. The scanned code fills the ticket
-                number and looks it up automatically.
+                Point the camera at a ticket&apos;s QR code. The scanned code fills the
+                ticket number and looks it up automatically.
               </p>
               <button
                 type="button"
@@ -234,7 +265,7 @@ export default function AdminCheckInPage() {
             </>
           ) : (
             <QrScanner
-              onScan={handleScanned}
+              onScan={(value) => void handleScanned(value)}
               onError={(message) => {
                 setScannerError(message);
                 setScanning(false);
@@ -242,6 +273,17 @@ export default function AdminCheckInPage() {
               onClose={() => setScanning(false)}
             />
           )}
+
+          <div className="checkin-photo-row">
+            <PhotoQrCapture
+              onScan={(value) => void handleScanned(value)}
+              onError={(message) => {
+                setLookupResult(null);
+                setScannerError(message);
+              }}
+              busy={lookingUp || checkingIn}
+            />
+          </div>
         </section>
       </div>
 

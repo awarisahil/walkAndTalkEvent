@@ -1,0 +1,71 @@
+.upi-qr {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.upi-qr-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: lowercase;
+}
+
+.upi-qr-divider::before,
+.upi-qr-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.upi-qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.upi-qr-canvas {
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  padding: 8px;
+  background: #ffffff;
+}
+
+.upi-qr-brand {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  color: var(--color-text);
+}
+
+.upi-qr-amount {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.upi-qr-hint {
+  font-size: 0.82rem;
+  max-width: 300px;
+}
+
+.upi-qr-cancel {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.upi-qr-cancel:hover {
+  color: var(--color-text);
+}

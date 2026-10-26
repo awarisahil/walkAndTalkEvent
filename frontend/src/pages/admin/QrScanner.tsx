@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import jsQR from "jsqr";
 
 interface BarcodeDetectorInstance {
   detect(source: CanvasImageSource): Promise<Array<{ rawValue: string }>>;
@@ -114,5 +115,90 @@ export default function QrScanner({ onScan, onError, onClose }: QrScannerProps) 
         Cancel scan
       </button>
     </div>
+  );
+}
+
+/* ---------- photo capture (works over plain HTTP) ---------- */
+
+const MAX_IMAGE_DIMENSION = 1200;
+
+interface PhotoQrCaptureProps {
+  /** Called with the decoded QR text (ticket number or opaque qr token). */
+  onScan: (value: string) => void;
+  onError: (message: string) => void;
+  busy?: boolean;
+}
+
+/**
+ * Decode-a-photo fallback for environments where getUserMedia is blocked
+ * (non-secure contexts): opens the native camera via a capture file input
+ * and decodes the QR with jsQR — pure JS, no native APIs required.
+ */
+export function PhotoQrCapture({ onScan, onError, busy = false }: PhotoQrCaptureProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [decoding, setDecoding] = useState(false);
+
+  async function handleFile(file: File | null) {
+    if (!file) return;
+    setDecoding(true);
+    try {
+      const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+      try {
+        // Downscale very large photos for a faster decode.
+        const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(bitmap.width, bitmap.height));
+        const width = Math.max(1, Math.round(bitmap.width * scale));
+        const height = Math.max(1, Math.round(bitmap.height * scale));
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) {
+          onError("Could not process the photo — type the ticket number instead.");
+          return;
+        }
+        ctx.drawImage(bitmap, 0, 0, width, height);
+        const imageData = ctx.getImageData(0, 0, width, height);
+
+        const code = jsQR(imageData.data, width, height, { inversionAttempts: "attemptBoth" });
+        const value = code?.data?.trim();
+        if (value) {
+          onScan(value);
+        } else {
+          onError("Couldn't read the QR — try a sharper photo or type the ticket number.");
+        }
+      } finally {
+        bitmap.close();
+      }
+    } catch {
+      onError("That file couldn't be read as an image — try another photo.");
+    } finally {
+      setDecoding(false);
+      // Allow picking the same file again.
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="qr-photo-input"
+        aria-label="Photograph a QR code to scan"
+        disabled={busy || decoding}
+        onChange={(event) => void handleFile(event.target.files?.[0] ?? null)}
+      />
+      <button
+        type="button"
+        className="btn btn-secondary"
+        disabled={busy || decoding}
+        onClick={() => inputRef.current?.click()}
+      >
+        {decoding ? "Decoding…" : "Scan with camera (take a photo)"}
+      </button>
+    </>
   );
 }

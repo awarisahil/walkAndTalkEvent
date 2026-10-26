@@ -26,3 +26,21 @@
     flex-direction: column;
   }
 }
+
+/* Attendees column: cell layout + hide on small screens */
+.admin-attendees-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-attendees-count {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .admin-attendees-col {
+    display: none;
+  }
+}

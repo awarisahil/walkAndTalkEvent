@@ -52,6 +52,14 @@ export interface PagedResult<T> {
   meta: EventListMeta;
 }
 
+/** Admin list-item shape: includes confirmed-attendee summary fields. */
+export interface AdminEvent extends Event {
+  /** Up to 6 confirmed (paid) attendee names, ordered by purchase. */
+  attendeeNames: string[];
+  /** Total confirmed tickets (ACTIVE/USED). */
+  attendeeCount: number;
+}
+
 export interface RequestCounts {
   pending: number;
   paymentPending: number;
@@ -63,6 +71,8 @@ export interface RequestCounts {
 
 export interface AdminEventDetail extends Event {
   requestCounts: RequestCounts;
+  attendeeNames: string[];
+  attendeeCount: number;
 }
 
 export type TicketRequestStatus =
@@ -415,4 +425,14 @@ export interface InviteVerifyResponse {
     createdAt?: string;
   } | null;
   alreadyProcessed: boolean;
+}
+
+
+/* ---------- UPI QR payment ---------- */
+
+export interface InviteUpiQrResponse {
+  /** razp.io payment-link URL to encode as the QR. */
+  qrUrl: string;
+  amount: string;
+  paymentId: string;
 }

@@ -76,6 +76,35 @@ function buildWhere(query: EventListQuery, admin: boolean) {
   return where;
 }
 
+async function withAttendeeSummary<T extends { id: string }>(events: T[]) {
+  if (events.length === 0) return events;
+
+  const tickets = await prisma.ticket.findMany({
+    where: {
+      eventId: { in: events.map((e) => e.id) },
+      status: { in: ["ACTIVE", "USED"] },
+    },
+    select: { eventId: true, user: { select: { name: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const byEvent = new Map<string, { names: string[]; count: number }>();
+  for (const ticket of tickets) {
+    const entry = byEvent.get(ticket.eventId) ?? { names: [], count: 0 };
+    entry.count += 1;
+    if (entry.names.length < 6) entry.names.push(ticket.user.name);
+    byEvent.set(ticket.eventId, entry);
+  }
+
+  return events.map((event) => {
+    const summary = byEvent.get(event.id);
+    return Object.assign(event, {
+      attendeeNames: summary?.names ?? [],
+      attendeeCount: summary?.count ?? 0,
+    });
+  });
+}
+
 async function withAvailability<
   T extends { id: string; capacity: number },
 >(events: T[]) {
@@ -138,7 +167,8 @@ export async function listAdminEvents(
     select: eventCardSelect,
   });
 
-  return paged(await withAvailability(events), total, pagination);
+  const withCounts = await withAvailability(events);
+  return paged(await withAttendeeSummary(withCounts), total, pagination);
 }
 
 async function findEventOrThrow(eventId: string) {
@@ -167,8 +197,10 @@ export async function getAdminEventById(eventId: string) {
     requestCounts.map((r) => [r.status, r._count._all]),
   );
 
+  const [withNames] = await withAttendeeSummary([event]);
+
   return {
-    ...event,
+    ...withNames,
     occupied,
     available: Math.max(0, event.capacity - occupied),
     requestCounts: {

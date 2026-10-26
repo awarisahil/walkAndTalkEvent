@@ -12,6 +12,11 @@ import {
   sendCongratulations,
   verifyAndFulfillPaymentInternal,
 } from "../services/payment.service";
+import {
+  createRazorpayPaymentLink,
+  fetchRazorpayPaymentLink,
+  razorpayEnabled,
+} from "../services/razorpay.service";
 import { reservationCutoff } from "../services/reservation.service";
 import { verifyPaymentSchema } from "../validators/query.validator";
 import { asyncHandler } from "../utils/asyncHandler";
@@ -62,6 +67,92 @@ export const invitePayController = asyncHandler(
       }
       throw error;
     }
+  },
+);
+
+/**
+ * UPI QR flow: creates (or reuses) a Razorpay Payment Link for this
+ * invite and returns its short URL — the frontend renders it as a QR.
+ */
+export const inviteUpiQrController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const requestId = await getInviteRequestId(String(req.params.token));
+
+    const request = await prisma.ticketRequest.findUnique({
+      where: { id: requestId },
+      include: {
+        event: { select: { title: true } },
+        user: { select: { name: true, email: true, phone: true } },
+      },
+    });
+
+    if (!request) throw notFound("Ticket request not found");
+
+    if (
+      request.status !== "PAYMENT_PENDING" ||
+      !request.reviewedAt ||
+      request.reviewedAt < reservationCutoff()
+    ) {
+      throw conflict(
+        "Your payment window has expired — please contact the organizer",
+      );
+    }
+
+    if (!razorpayEnabled()) {
+      throw badRequest(
+        "Online payments are not configured yet; please contact the organizer",
+      );
+    }
+
+    const payment = await createPaymentForRequest(requestId);
+    if (!payment) throw notFound("Payment not found");
+
+    // Reuse an existing payment link when present (idempotent re-open).
+    const existing = await prisma.payment.findUnique({
+      where: { id: payment.id },
+      select: { providerOrderId: true },
+    });
+    if (existing?.providerOrderId?.startsWith("plink_")) {
+      const link = await fetchRazorpayPaymentLink(
+        existing.providerOrderId,
+      ).catch(() => null);
+      if (link?.short_url) {
+        return ok(res, {
+          qrUrl: link.short_url,
+          amount: payment.amount,
+          paymentId: payment.id,
+        });
+      }
+    }
+
+    const amount = Number(payment.amount);
+    if (!Number.isFinite(amount) || amount < 1) {
+      throw conflict("Invalid payment amount; please contact support");
+    }
+
+    const link = await createRazorpayPaymentLink({
+      amountInPaise: Math.round(amount * 100),
+      referenceId: payment.id,
+      description: `${request.event.title} — Walk & Talk Events`,
+      customerName: request.user.name,
+      customerEmail: request.user.email,
+      customerPhone: request.user.phone,
+      notes: {
+        paymentId: payment.id,
+        ticketRequestId: requestId,
+      },
+    });
+
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: { providerOrderId: link.id },
+    });
+
+    return ok(res, {
+      qrUrl: link.short_url,
+      amount: payment.amount,
+      paymentId: payment.id,
+    });
   },
 );
 

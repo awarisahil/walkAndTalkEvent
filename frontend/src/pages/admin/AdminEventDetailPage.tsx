@@ -4,6 +4,7 @@ import Badge from "../../components/Badge";
 import ErrorState from "../../components/ErrorState";
 import Spinner from "../../components/Spinner";
 import StatusBadge from "../../components/StatusBadge";
+import AttendeeStack from "../../components/AttendeeStack";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import { formatDateTime, formatEventTime, formatINR } from "../../utils/format";
 import EventActions from "./EventActions";
@@ -97,6 +98,47 @@ export default function AdminEventDetailPage() {
 
             <EventActions event={event} size="md" onChanged={query.reload} />
           </div>
+        </section>
+
+        <section className="admin-section">
+          <h2 className="admin-section-title">Who&apos;s coming</h2>
+          {event.attendeeCount > 0 ? (
+            <div className="card admin-card whos-coming">
+              <div className="whos-coming-head">
+                <AttendeeStack
+                  names={event.attendeeNames}
+                  count={event.attendeeCount}
+                  size={36}
+                />
+                <span className="muted">
+                  {event.attendeeCount} confirmed · {counts.paymentPending} awaiting payment
+                </span>
+              </div>
+              <ul className="whos-coming-names">
+                {event.attendeeNames.map((name) => (
+                  <li key={name} className="whos-coming-name">
+                    {name}
+                  </li>
+                ))}
+                {event.attendeeCount > event.attendeeNames.length ? (
+                  <li className="whos-coming-name muted">
+                    +{event.attendeeCount - event.attendeeNames.length} more
+                  </li>
+                ) : null}
+              </ul>
+              <Link to={`/admin/events/${event.id}/attendees`} className="whos-coming-link">
+                View all attendees →
+              </Link>
+            </div>
+          ) : (
+            <p className="muted">
+              No confirmed attendees yet
+              {counts.paymentPending > 0
+                ? ` — ${counts.paymentPending} awaiting payment`
+                : ""}
+              .
+            </p>
+          )}
         </section>
 
         <section className="admin-section">

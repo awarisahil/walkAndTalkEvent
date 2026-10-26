@@ -62,32 +62,67 @@ export const razorpayWebhookController = asyncHandler(
     }
 
     const paymentEntity = event.payload?.payment?.entity;
+    const linkEntity = (
+      event as {
+        payload?: {
+          payment_link?: { entity?: { id?: string; status?: string } };
+        };
+      }
+    ).payload?.payment_link?.entity;
 
-    if (event.event === "payment.captured" && paymentEntity?.order_id) {
+    /** Resolve our internal payment id from a webhook payload:
+     *  1. payment entity notes (payment links carry our id in notes)
+     *  2. providerOrderId match (standard checkout orders / link ids) */
+    const resolvePaymentId = async (): Promise<string | null> => {
+      const noted = (
+        paymentEntity as { notes?: { paymentId?: string } } | undefined
+      )?.notes?.paymentId;
+      if (noted) return noted;
+
+      const ref =
+        paymentEntity?.order_id ?? paymentEntity?.id ?? linkEntity?.id;
+      if (!ref) return null;
+
       const payment = await prisma.payment.findUnique({
-        where: { providerOrderId: paymentEntity.order_id },
+        where: { providerOrderId: ref },
         select: { id: true },
       });
+      return payment?.id ?? null;
+    };
 
-      if (payment) {
-        await fulfillPayment(payment.id, {
-          providerPaymentId: paymentEntity.id,
-        });
-      }
-    }
-
-    if (event.event === "payment.failed" && paymentEntity?.order_id) {
+    const markFailed = async () => {
+      const id = await resolvePaymentId();
+      if (!id) return;
       const payment = await prisma.payment.findUnique({
-        where: { providerOrderId: paymentEntity.order_id },
-        select: { id: true, status: true },
+        where: { id },
+        select: { status: true },
       });
-
       if (payment && payment.status === "PENDING") {
         await prisma.payment.update({
-          where: { id: payment.id },
+          where: { id },
           data: { status: "FAILED" },
         });
       }
+    };
+
+    const capture = async () => {
+      const id = await resolvePaymentId();
+      if (!id) return;
+      await fulfillPayment(id, {
+        providerPaymentId: paymentEntity?.id,
+      });
+    };
+
+    if (
+      event.event === "payment.captured" ||
+      event.event === "payment_link.paid" ||
+      (event.event === "order.paid" && paymentEntity)
+    ) {
+      await capture();
+    }
+
+    if (event.event === "payment.failed" || event.event === "payment_link.failed") {
+      await markFailed();
     }
 
     return res.status(200).json({ success: true });

@@ -437,3 +437,30 @@ h4 {
     padding-inline: 16px;
   }
 }
+
+/* ---------- accessibility ---------- */
+
+/* Visible keyboard focus everywhere */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Admin pages: bump muted (stone-400) secondary text to stone-600 for
+   meaningful content (4.5:1); stone-400 stays for purely decorative meta
+   outside the admin area. */
+.admin-content .muted {
+  color: var(--color-text-secondary);
+}
+
+/* Touch targets in the admin area: sidebar links + small buttons ≥ 36px */
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+}
+
+.admin-content .btn-sm {
+  min-height: 36px;
+}

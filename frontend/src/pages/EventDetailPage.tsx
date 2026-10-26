@@ -9,6 +9,7 @@ import Badge from "../components/Badge";
 import ErrorState from "../components/ErrorState";
 import Spinner from "../components/Spinner";
 import StatusBadge from "../components/StatusBadge";
+import UpiQrPay from "../components/UpiQrPay";
 import { useAsyncData } from "../hooks/useAsyncData";
 import type { Event, InviteState } from "../types";
 import { formatDateTime, formatEventTime, formatINR } from "../utils/format";
@@ -365,11 +366,13 @@ function JoinStatusCard({
         <JoinStatusBody
           state={state}
           event={event}
+          inviteToken={inviteToken}
           notice={notice}
           payBusy={payBusy}
           gatewayUnavailable={gatewayUnavailable}
           onPay={() => void handlePay()}
           onSimulate={() => void handleSimulate()}
+          onPaid={() => void load()}
           canvasRef={canvasRef}
           qrError={qrError}
         />
@@ -385,21 +388,25 @@ function JoinStatusCard({
 function JoinStatusBody({
   state,
   event,
+  inviteToken,
   notice,
   payBusy,
   gatewayUnavailable,
   onPay,
   onSimulate,
+  onPaid,
   canvasRef,
   qrError,
 }: {
   state: InviteState;
   event: Event;
+  inviteToken: string;
   notice: string | null;
   payBusy: boolean;
   gatewayUnavailable: boolean;
   onPay: () => void;
   onSimulate: () => void;
+  onPaid: () => void;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   qrError: boolean;
 }) {
@@ -482,6 +489,11 @@ function JoinStatusBody({
               {payBusy ? "Opening checkout…" : `Pay ${formatINR(amount)} securely`}
             </button>
           )}
+          <UpiQrPay
+            token={inviteToken}
+            amount={amount}
+            onPaid={onPaid}
+          />
         </>
       ) : state.status === "PAYMENT_PENDING" ? (
         <div className="banner banner-warning" role="status">

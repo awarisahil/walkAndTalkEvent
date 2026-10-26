@@ -7,7 +7,8 @@ import Pagination from "../../components/Pagination";
 import Spinner from "../../components/Spinner";
 import StatusBadge from "../../components/StatusBadge";
 import { toErrorMessage } from "../../hooks/useAsyncData";
-import type { Event, EventStatus, PagedResult } from "../../types";
+import type { AdminEvent, EventStatus, PagedResult } from "../../types";
+import AttendeeStack from "../../components/AttendeeStack";
 import { formatDate, formatINR } from "../../utils/format";
 import EventActions from "./EventActions";
 import "./AdminPages.css";
@@ -19,7 +20,7 @@ export default function AdminEventsPage() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | "">("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [result, setResult] = useState<PagedResult<Event> | null>(null);
+  const [result, setResult] = useState<PagedResult<AdminEvent> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -136,6 +137,7 @@ export default function AdminEventsPage() {
                   <th>Venue</th>
                   <th>Price</th>
                   <th>Capacity</th>
+                  <th scope="col" className="admin-attendees-col">Attendees</th>
                   <th>Status</th>
                   <th>Created</th>
                   <th>Actions</th>
@@ -161,6 +163,21 @@ export default function AdminEventsPage() {
                     </td>
                     <td className="muted">
                       {event.occupied}/{event.capacity} taken · {event.available} left
+                    </td>
+                    <td className="admin-attendees-col">
+                      {event.attendeeCount > 0 ? (
+                        <div className="admin-attendees-cell">
+                          <AttendeeStack
+                            names={event.attendeeNames}
+                            count={event.attendeeCount}
+                          />
+                          <span className="muted admin-attendees-count">
+                            {event.attendeeCount} going
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="muted">—</span>
+                      )}
                     </td>
                     <td>
                       <StatusBadge status={event.status} kind="event" />

@@ -42,6 +42,38 @@ export async function createRazorpayOrder(options: {
   });
 }
 
+/**
+ * Razorpay Payment Link — powers the on-page UPI QR. `notes` propagate to
+ * the resulting payment entity, which is how the webhook finds our record.
+ */
+export async function createRazorpayPaymentLink(options: {
+  amountInPaise: number;
+  referenceId: string;
+  description: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string | null;
+  notes: Record<string, string>;
+}) {
+  return getClient().paymentLink.create({
+    amount: options.amountInPaise,
+    currency: "INR",
+    reference_id: options.referenceId,
+    description: options.description,
+    customer: {
+      name: options.customerName,
+      email: options.customerEmail,
+      contact: options.customerPhone ?? undefined,
+    },
+    notify: { sms: false, email: false },
+    notes: options.notes,
+  });
+}
+
+export async function fetchRazorpayPaymentLink(linkId: string) {
+  return getClient().paymentLink.fetch(linkId);
+}
+
 export function verifyPaymentSignature(options: {
   orderId: string;
   paymentId: string;
