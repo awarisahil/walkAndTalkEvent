@@ -28,10 +28,10 @@
 
 .event-detail-kicker {
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-accent);
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
   margin-bottom: 6px;
 }
 

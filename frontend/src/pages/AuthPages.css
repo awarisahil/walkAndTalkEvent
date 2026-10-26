@@ -4,9 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 48px 20px;
-  background:
-    radial-gradient(60% 80% at 10% 0%, var(--color-accent-soft) 0%, transparent 60%),
-    var(--color-bg-subtle);
+  background: var(--color-bg-subtle);
 }
 
 .auth-card {
@@ -19,9 +17,9 @@
 }
 
 .auth-card-title {
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .auth-card-subtitle {
