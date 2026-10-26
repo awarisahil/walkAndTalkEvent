@@ -486,7 +486,7 @@ function JoinStatusBody({
               disabled={payBusy}
               onClick={onPay}
             >
-              {payBusy ? "Opening checkout…" : `Pay ${formatINR(amount)} securely`}
+              {payBusy ? "Opening checkout…" : `Pay ${formatINR(amount)} — UPI or card`}
             </button>
           )}
           <UpiQrPay

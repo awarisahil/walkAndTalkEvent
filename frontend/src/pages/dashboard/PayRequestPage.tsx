@@ -243,7 +243,7 @@ export default function PayRequestPage() {
             disabled={busy}
             onClick={() => void handlePay()}
           >
-            {busy ? "Opening checkout…" : `Pay ${formatINR(amount)} securely`}
+            {busy ? "Opening checkout…" : `Pay ${formatINR(amount)} — UPI or card`}
           </button>
         ) : import.meta.env.DEV ? (
           <>
