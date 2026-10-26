@@ -20,14 +20,7 @@ export default function Navbar() {
     <header className="navbar">
       <div className="container navbar-inner">
         <Link to="/" className="navbar-brand" onClick={closeMenu}>
-          <span className="navbar-brand-mark" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 20c4-1 5-4 6-7s3-7 8-9" strokeDasharray="0" />
-              <path d="M13.5 6.5c2.5-1 5.5-1 7.5.5-1 2.5-3.5 4-6.5 3.5" />
-              <path d="M11 12.5c.8 2.2.5 4.5-.8 6.5-1.5-.5-2.5-2-2.2-4 .2-1 .8-2 2-2.5" />
-            </svg>
-          </span>
-          Walk &amp; Talk Events
+          Walk &amp; Talk
         </Link>
 
         <button

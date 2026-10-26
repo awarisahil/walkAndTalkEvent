@@ -60,7 +60,7 @@ export default function EventCard({ event, myRequest }: EventCardProps) {
           {event.available === 0 ? (
             <span className="badge badge-neutral">Sold out</span>
           ) : isAlmostFull ? (
-            <span className="badge badge-danger">Only {event.available} left</span>
+            <span className="badge badge-highlight">Only {event.available} left</span>
           ) : null}
         </div>
       </div>

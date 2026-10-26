@@ -90,7 +90,7 @@
   width: 100%;
   height: auto;
   display: block;
-  background: var(--walnut);
+  background: var(--color-text);
 }
 
 /* Hover affordance: hint that the media opens full-view */
@@ -104,8 +104,8 @@
   width: 34px;
   height: 34px;
   border-radius: 999px;
-  background: rgba(74, 47, 36, 0.68);
-  color: var(--cream);
+  background: rgba(28, 25, 23, 0.65);
+  color: #ffffff;
   opacity: 0;
   transition: opacity 0.15s ease;
   pointer-events: none;
@@ -192,7 +192,7 @@
   padding: 4px 12px;
   border-radius: 999px;
   background: var(--color-accent-soft);
-  color: var(--walnut);
+  color: var(--color-text);
   font-size: 0.78rem;
   font-weight: 600;
 }

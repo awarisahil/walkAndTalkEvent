@@ -129,9 +129,14 @@ if [ -n "$OLD_PID" ]; then kill "$OLD_PID" 2>/dev/null || true; fi
 sleep 1
 cd "$APP_DIR/backend"
 NODE_ENV=production nohup node dist/server.js > "$APP_DIR/.run/app.log" 2>&1 &
-sleep 2
-# Record the REAL listener pid, not the backgrounded job pid.
-RUN_PID="$(ss -ltnp 2>/dev/null | grep ":$PORT " | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2 || true)"
+# Record the REAL listener pid (never the backgrounded job pid), waiting
+# until the server has actually bound the port.
+RUN_PID=""
+for i in $(seq 1 15); do
+  sleep 1
+  RUN_PID="$(ss -ltnp 2>/dev/null | grep ":$PORT " | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2 || true)"
+  [ -n "$RUN_PID" ] && break
+done
 echo "$RUN_PID" > "$APP_DIR/.run/app.pid"
 echo "$PORT" > "$APP_DIR/.run/app-port"
 

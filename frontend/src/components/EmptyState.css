@@ -11,7 +11,7 @@
 }
 
 .empty-state-icon {
-  color: var(--forest);
+  color: var(--color-text-muted);
   margin-bottom: 4px;
 }
 

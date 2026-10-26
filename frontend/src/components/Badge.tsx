@@ -8,7 +8,8 @@ export type BadgeTone =
   | "danger"
   | "neutral"
   | "violet"
-  | "accent";
+  | "accent"
+  | "highlight";
 
 interface BadgeProps {
   tone?: BadgeTone;
