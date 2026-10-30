@@ -21,6 +21,10 @@ import {
 
 const app = express();
 
+// Behind nginx (see deployment): trust the first proxy hop so req.ip and
+// the rate limiter see real client IPs instead of 127.0.0.1.
+app.set("trust proxy", 1);
+
 const corsOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173")
   .split(",")
   .map((origin) => origin.trim())
